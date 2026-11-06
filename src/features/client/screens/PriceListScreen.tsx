@@ -4,9 +4,9 @@ import { View } from 'react-native';
 import { errorMessage } from '@api/client';
 import { fetchBranches, fetchPriceList } from '@api/catalog';
 import { PriceRow } from '@features/client/components/PriceRow';
-import { Screen } from '@shared/components/Screen';
+import { Screen, ScreenHeader } from '@shared/components/Screen';
 import { ErrorState, Loading } from '@shared/components/States';
-import { Gold, Heading, Muted, Title } from '@shared/components/Text';
+import { Heading, Muted } from '@shared/components/Text';
 
 export function PriceListScreen() {
     const branches = useQuery({ queryKey: ['branches'], queryFn: fetchBranches });
@@ -42,14 +42,20 @@ export function PriceListScreen() {
 
     return (
         <Screen>
-            <Gold className="text-xs uppercase tracking-[3px]">{branch?.name}</Gold>
-            <Title className="mt-2">Price list</Title>
-            <Muted className="mb-6 mt-2">Clean cuts, fresh looks, confidence.</Muted>
+            <ScreenHeader eyebrow={branch?.name} title="Price list">
+                <Muted className="mt-3 leading-6">
+                    Clean cuts, fresh looks, confidence.
+                </Muted>
+            </ScreenHeader>
 
             {priceList.data?.map((category) => (
-                <View key={category.id} className="mb-8">
+                <View key={category.id} className="mb-9">
                     <Heading>{category.name}</Heading>
-                    {category.tagline ? <Muted className="mb-3 mt-1">{category.tagline}</Muted> : null}
+                    {category.tagline ? (
+                        <Muted className="mb-4 mt-1.5 leading-5">{category.tagline}</Muted>
+                    ) : (
+                        <View className="mb-4" />
+                    )}
 
                     {category.services?.map((service) => (
                         <PriceRow key={service.id} service={service} />

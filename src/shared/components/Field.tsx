@@ -1,6 +1,7 @@
 import { TextInput, TextInputProps, View } from 'react-native';
 
-import { Muted } from '@shared/components/Text';
+import { Eyebrow, Muted } from '@shared/components/Text';
+import { COLORS } from '@theme/fonts';
 
 export function Field({
     label,
@@ -11,12 +12,13 @@ export function Field({
 }: TextInputProps & { label: string; error?: string; hint?: string; className?: string }) {
     return (
         <View className={`mb-4 ${className}`}>
-            <Muted className="mb-2 uppercase tracking-wide">{label}</Muted>
+            <Eyebrow className="mb-2.5 text-smoke">{label}</Eyebrow>
 
             <TextInput
                 accessibilityLabel={label}
-                placeholderTextColor="#6b655c"
-                className={`min-h-[52px] rounded-xl border bg-panel px-4 text-base text-bone ${
+                placeholderTextColor="#5f5a52"
+                selectionColor={COLORS.gold}
+                className={`min-h-[54px] rounded-xl border bg-panel px-4 font-sans text-base text-bone ${
                     error ? 'border-stop' : 'border-white/15'
                 }`}
                 {...props}

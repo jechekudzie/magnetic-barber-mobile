@@ -3,9 +3,10 @@ import { View } from 'react-native';
 
 import { errorMessage } from '@api/client';
 import { fetchEarningsRun, fetchEarningsToday } from '@api/staff';
-import { Screen } from '@shared/components/Screen';
+import { Panel, Stat, StatRow } from '@shared/components/Panel';
+import { Screen, ScreenHeader } from '@shared/components/Screen';
 import { EmptyState, ErrorState, Loading } from '@shared/components/States';
-import { Body, Gold, Heading, Muted, Title } from '@shared/components/Text';
+import { Body, Eyebrow, Figure, Heading, Muted } from '@shared/components/Text';
 
 function centsToMoney(cents: number): string {
     const whole = cents / 100;
@@ -52,35 +53,42 @@ export function EarningsScreen() {
     }
 
     return (
-        <Screen>
-            <Title>Your earnings</Title>
-            <Muted className="mb-6 mt-2">{today.data.rate}% of every service you render.</Muted>
+        <Screen onRefresh={() => void today.refetch()} refreshing={today.isRefetching}>
+            <ScreenHeader eyebrow="Your pay" title="Earnings">
+                <Muted className="mt-3 leading-6">
+                    {today.data.rate}% of every service you render, once the visit is done.
+                </Muted>
+            </ScreenHeader>
 
-            <View className="rounded-2xl border border-gold/40 bg-panel p-5">
-                <Muted className="uppercase tracking-wide">Today</Muted>
-                <Gold className="mt-1 text-4xl font-bold">{today.data.data.earned.formatted}</Gold>
+            <Panel accent className="px-5 py-6">
+                <Eyebrow className="text-smoke">Today</Eyebrow>
+                <Figure className="mt-1.5 text-[40px] leading-[42px]">
+                    {today.data.data.earned.formatted}
+                </Figure>
 
-                <View className="mt-5 flex-row">
-                    <View className="flex-1">
-                        <Muted className="uppercase tracking-wide">Services</Muted>
-                        <Body className="mt-1 text-xl font-semibold">
-                            {today.data.data.services}
-                        </Body>
-                    </View>
-                    <View className="flex-1">
-                        <Muted className="uppercase tracking-wide">Clients</Muted>
-                        <Body className="mt-1 text-xl font-semibold">
-                            {today.data.data.clients}
-                        </Body>
-                    </View>
-                    <View className="flex-1">
-                        <Muted className="uppercase tracking-wide">Shop took</Muted>
-                        <Body className="mt-1 text-xl font-semibold">
-                            {today.data.data.took.formatted}
-                        </Body>
-                    </View>
+                <View className="mt-6">
+                    <StatRow>
+                        <Stat>
+                            <Eyebrow className="text-smoke">Services</Eyebrow>
+                            <Body className="mt-1.5 font-semibold text-lg">
+                                {today.data.data.services}
+                            </Body>
+                        </Stat>
+                        <Stat>
+                            <Eyebrow className="text-smoke">Clients</Eyebrow>
+                            <Body className="mt-1.5 font-semibold text-lg">
+                                {today.data.data.clients}
+                            </Body>
+                        </Stat>
+                        <Stat>
+                            <Eyebrow className="text-smoke">Shop took</Eyebrow>
+                            <Body className="mt-1.5 font-semibold text-lg">
+                                {today.data.data.took.formatted}
+                            </Body>
+                        </Stat>
+                    </StatRow>
                 </View>
-            </View>
+            </Panel>
 
             <Heading className="mb-3 mt-8">Last fortnight</Heading>
 
@@ -95,26 +103,23 @@ export function EarningsScreen() {
                 />
             ) : (
                 <>
-                    <View className="mb-3 flex-row items-baseline justify-between">
+                    <View className="mb-4 flex-row items-baseline justify-between">
                         <Muted>Total</Muted>
-                        <Gold className="text-xl font-semibold">
-                            {centsToMoney(run.data.total_cents)}
-                        </Gold>
+                        <Figure>{centsToMoney(run.data.total_cents)}</Figure>
                     </View>
 
                     {run.data.data.map((day) => (
-                        <View
-                            key={day.date}
-                            className="mb-2 flex-row items-center justify-between rounded-xl border border-white/10 bg-panel px-4 py-4"
-                        >
-                            <View>
-                                <Body>{day.date}</Body>
-                                <Muted className="mt-1">
-                                    {day.services} service{day.services === 1 ? '' : 's'}
-                                </Muted>
+                        <Panel key={day.date} className="mb-2 px-4 py-4">
+                            <View className="flex-row items-center justify-between">
+                                <View>
+                                    <Body>{day.date}</Body>
+                                    <Muted className="mt-1">
+                                        {day.services} service{day.services === 1 ? '' : 's'}
+                                    </Muted>
+                                </View>
+                                <Figure className="text-xl">{day.earned.formatted}</Figure>
                             </View>
-                            <Gold className="text-lg font-semibold">{day.earned.formatted}</Gold>
-                        </View>
+                        </Panel>
                     ))}
                 </>
             )}

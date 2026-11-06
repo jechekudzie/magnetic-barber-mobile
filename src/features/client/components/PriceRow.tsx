@@ -1,8 +1,9 @@
-import { Pressable, View } from 'react-native';
+import { Pressable, Text, View } from 'react-native';
 import { Check, Clock } from 'lucide-react-native';
 
 import type { Service } from '@shared/types';
-import { Body, Gold, Muted } from '@shared/components/Text';
+import { Muted, Strong } from '@shared/components/Text';
+import { COLORS } from '@theme/fonts';
 
 /**
  * One line of the price list.
@@ -33,10 +34,10 @@ export function PriceRow({
             }`}
         >
             <View className="flex-1 pr-3">
-                <Body className="font-semibold">{service.name}</Body>
+                <Strong>{service.name}</Strong>
 
                 <View className="mt-1 flex-row items-center">
-                    <Clock size={12} color="#9c9488" />
+                    <Clock size={12} color={COLORS.smoke} />
                     <Muted className="ml-1">{service.duration_minutes} min</Muted>
                 </View>
 
@@ -47,14 +48,14 @@ export function PriceRow({
 
             <View className="items-end">
                 {service.is_from_price ? (
-                    <Muted className="text-[10px] uppercase tracking-wide">From</Muted>
+                    <Muted className="text-[10px] uppercase tracking-eyebrow">From</Muted>
                 ) : null}
-                <Gold className="text-lg font-semibold">{price}</Gold>
+                <Text className="font-display text-gold text-lg">{price}</Text>
             </View>
 
             {selected ? (
                 <View className="ml-3 h-6 w-6 items-center justify-center rounded-full bg-gold">
-                    <Check size={14} color="#0d0d0d" />
+                    <Check size={14} color={COLORS.ink} />
                 </View>
             ) : null}
         </Pressable>

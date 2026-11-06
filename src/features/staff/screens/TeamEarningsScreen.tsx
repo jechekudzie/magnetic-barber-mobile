@@ -3,9 +3,10 @@ import { View } from 'react-native';
 
 import { errorMessage } from '@api/client';
 import { fetchBranchEarnings } from '@api/staff';
-import { Screen } from '@shared/components/Screen';
+import { Panel, Stat, StatRow } from '@shared/components/Panel';
+import { Screen, ScreenHeader } from '@shared/components/Screen';
 import { EmptyState, ErrorState, Loading } from '@shared/components/States';
-import { Body, Gold, Muted, Title } from '@shared/components/Text';
+import { Eyebrow, Figure, Muted, Strong } from '@shared/components/Text';
 
 function centsToMoney(cents: number): string {
     const whole = cents / 100;
@@ -47,24 +48,23 @@ export function TeamEarningsScreen() {
     const { data, total_earned_cents, total_taken_cents, branch } = earnings.data;
 
     return (
-        <Screen>
-            <Gold className="text-xs uppercase tracking-[3px]">{branch.name}</Gold>
-            <Title className="mt-2">The floor today</Title>
+        <Screen onRefresh={() => void earnings.refetch()} refreshing={earnings.isRefetching}>
+            <ScreenHeader eyebrow={branch.name} title="The floor today" />
 
-            <View className="mb-6 mt-4 flex-row rounded-2xl border border-white/10 bg-panel p-5">
-                <View className="flex-1">
-                    <Muted className="uppercase tracking-wide">Taken</Muted>
-                    <Body className="mt-1 text-2xl font-bold">
-                        {centsToMoney(total_taken_cents)}
-                    </Body>
-                </View>
-                <View className="flex-1">
-                    <Muted className="uppercase tracking-wide">Commission</Muted>
-                    <Gold className="mt-1 text-2xl font-bold">
-                        {centsToMoney(total_earned_cents)}
-                    </Gold>
-                </View>
-            </View>
+            <Panel className="mb-7 px-5 py-5">
+                <StatRow>
+                    <Stat>
+                        <Eyebrow className="text-smoke">Taken</Eyebrow>
+                        <Figure className="mt-1 text-bone">
+                            {centsToMoney(total_taken_cents)}
+                        </Figure>
+                    </Stat>
+                    <Stat>
+                        <Eyebrow className="text-smoke">Commission</Eyebrow>
+                        <Figure className="mt-1">{centsToMoney(total_earned_cents)}</Figure>
+                    </Stat>
+                </StatRow>
+            </Panel>
 
             {data.length === 0 ? (
                 <EmptyState
@@ -73,25 +73,24 @@ export function TeamEarningsScreen() {
                 />
             ) : (
                 data.map((row, index) => (
-                    <View
-                        key={row.staff_id}
-                        className="mb-2 flex-row items-center rounded-xl border border-white/10 bg-panel px-4 py-4"
-                    >
-                        <View className="mr-4 h-8 w-8 items-center justify-center rounded-full bg-panel-alt">
-                            <Muted>{index + 1}</Muted>
-                        </View>
+                    <Panel key={row.staff_id} className="mb-2 px-4 py-4">
+                        <View className="flex-row items-center">
+                            <View className="mr-4 h-9 w-9 items-center justify-center rounded-full bg-panel-alt">
+                                <Muted className="font-display text-bone">{index + 1}</Muted>
+                            </View>
 
-                        <View className="flex-1">
-                            <Body className="font-semibold">{row.name}</Body>
-                            <Muted className="mt-1">
-                                {row.services} service{row.services === 1 ? '' : 's'} ·{' '}
-                                {row.clients} client{row.clients === 1 ? '' : 's'} ·{' '}
-                                {row.took.formatted} taken
-                            </Muted>
-                        </View>
+                            <View className="flex-1 pr-3">
+                                <Strong>{row.name}</Strong>
+                                <Muted className="mt-1 leading-5">
+                                    {row.services} service{row.services === 1 ? '' : 's'} ·{' '}
+                                    {row.clients} client{row.clients === 1 ? '' : 's'} ·{' '}
+                                    {row.took.formatted} taken
+                                </Muted>
+                            </View>
 
-                        <Gold className="text-lg font-semibold">{row.earned.formatted}</Gold>
-                    </View>
+                            <Figure className="text-xl">{row.earned.formatted}</Figure>
+                        </View>
+                    </Panel>
                 ))
             )}
         </Screen>

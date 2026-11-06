@@ -1,10 +1,11 @@
-import { Alert, Pressable, View } from 'react-native';
+import { Alert, View } from 'react-native';
 import { useQueryClient } from '@tanstack/react-query';
 
 import { signOut as signOutRequest } from '@api/auth';
 import { Button } from '@shared/components/Button';
-import { Screen } from '@shared/components/Screen';
-import { Body, Gold, Heading, Muted, Title } from '@shared/components/Text';
+import { Panel } from '@shared/components/Panel';
+import { Screen, ScreenHeader } from '@shared/components/Screen';
+import { Body, Eyebrow, Heading, Muted, Strong } from '@shared/components/Text';
 import { useAuthStore } from '@stores/auth';
 
 /**
@@ -32,8 +33,14 @@ export function AccountScreen() {
 
     return (
         <Screen>
-            <Title>{user?.staff?.display_name ?? user?.name}</Title>
-            <Muted className="mt-2">{user?.staff?.title ?? user?.roles.join(', ')}</Muted>
+            <ScreenHeader
+                eyebrow="Account"
+                title={user?.staff?.display_name ?? user?.name ?? 'You'}
+            >
+                <Muted className="mt-3">
+                    {user?.staff?.title ?? user?.roles.join(', ')}
+                </Muted>
+            </ScreenHeader>
 
             {user && user.branches.length > 1 ? (
                 <>
@@ -42,39 +49,37 @@ export function AccountScreen() {
                         const active = branch.id === branchId;
 
                         return (
-                            <Pressable
+                            <Panel
                                 key={branch.id}
-                                accessibilityRole="button"
-                                accessibilityState={{ selected: active }}
+                                accent={active}
+                                className="mb-2 px-4 py-4"
                                 onPress={() => {
                                     setBranch(branch.id);
                                     // Everything on screen was scoped to the
                                     // branch we just left.
                                     queryClient.clear();
                                 }}
-                                className={`mb-2 rounded-xl border px-4 py-4 ${
-                                    active ? 'border-gold bg-panel-alt' : 'border-white/10 bg-panel'
-                                }`}
                             >
-                                <Body className="font-semibold">{branch.name}</Body>
-                                {active ? <Gold className="mt-1 text-sm">Current</Gold> : null}
-                            </Pressable>
+                                <Strong>{branch.name}</Strong>
+                                {active ? <Eyebrow className="mt-1.5">Current</Eyebrow> : null}
+                            </Panel>
                         );
                     })}
                 </>
             ) : null}
 
             <Heading className="mb-3 mt-8">What you can do here</Heading>
-            <View className="rounded-2xl border border-white/10 bg-panel p-5">
+            <Panel className="px-5 py-5">
                 {(user?.roles ?? []).map((role) => (
                     <Body key={role} className="capitalize">
                         {role.replace('-', ' ')}
                     </Body>
                 ))}
-                <Muted className="mt-2">
-                    {user?.permissions.length ?? 0} permissions at this branch.
+                <Muted className="mt-2.5 leading-5">
+                    {user?.permissions.length ?? 0} permissions at this branch. What you can see
+                    and do is set by the shop, not by this app.
                 </Muted>
-            </View>
+            </Panel>
 
             <Button
                 label="Sign out"

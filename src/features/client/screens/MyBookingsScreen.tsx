@@ -2,11 +2,16 @@ import { useState } from 'react';
 import { Alert, Pressable, View } from 'react-native';
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
 
+import { Button } from '@shared/components/Button';
+import type { ClientTabProps } from '@navigation/types';
+import { useAuthStore } from '@stores/auth';
+
 import { cancelBooking, fetchMyBookings } from '@api/bookings';
 import { errorMessage } from '@api/client';
-import { Screen } from '@shared/components/Screen';
+import { Panel } from '@shared/components/Panel';
+import { Screen, ScreenHeader } from '@shared/components/Screen';
 import { EmptyState, ErrorState, Loading } from '@shared/components/States';
-import { Body, Gold, Heading, Muted, Title } from '@shared/components/Text';
+import { Body, Figure, Heading, Muted, Strong } from '@shared/components/Text';
 import type { Appointment } from '@shared/types';
 
 const STATUS_TONE: Record<string, string> = {
@@ -29,16 +34,16 @@ function BookingCard({
     cancelling: boolean;
 }) {
     return (
-        <View className="mb-3 rounded-2xl border border-white/10 bg-panel p-5">
+        <Panel className="mb-3 px-5 py-5">
             <View className="flex-row items-start justify-between">
                 <View className="flex-1 pr-3">
                     <Heading>{appointment.when_label}</Heading>
-                    <Muted className="mt-1">
+                    <Muted className="mt-1.5 leading-5">
                         {appointment.services?.map((s) => s.name).join(', ')}
                     </Muted>
                 </View>
 
-                <Gold className="text-lg font-semibold">{appointment.total.formatted}</Gold>
+                <Figure className="text-xl">{appointment.total.formatted}</Figure>
             </View>
 
             <View className="mt-3 flex-row items-center justify-between">
@@ -57,24 +62,29 @@ function BookingCard({
                     accessibilityRole="button"
                     disabled={cancelling}
                     onPress={onCancel}
-                    className="mt-4 self-start rounded-lg border border-stop px-4 py-2"
+                    className="mt-4 self-start rounded-lg border border-stop px-4 py-2.5"
                 >
                     <Body className="text-sm text-stop">
                         {cancelling ? 'Cancelling…' : 'Cancel this booking'}
                     </Body>
                 </Pressable>
             ) : null}
-        </View>
+        </Panel>
     );
 }
 
-export function MyBookingsScreen() {
+export function MyBookingsScreen({ navigation }: ClientTabProps<'Bookings'>) {
     const queryClient = useQueryClient();
     const [scope, setScope] = useState<'upcoming' | 'past'>('upcoming');
+
+    const user = useAuthStore((state) => state.user);
+    const token = useAuthStore((state) => state.token);
+    const signedIn = Boolean(token && user && !user.is_staff);
 
     const bookings = useQuery({
         queryKey: ['my-bookings', scope],
         queryFn: () => fetchMyBookings(scope),
+        enabled: signedIn,
         staleTime: 1000 * 60,
     });
 
@@ -84,24 +94,48 @@ export function MyBookingsScreen() {
         onError: (caught) => Alert.alert('We could not cancel that', errorMessage(caught)),
     });
 
-    return (
-        <Screen>
-            <Title>Your bookings</Title>
+    if (!signedIn) {
+        return (
+            <Screen>
+                <ScreenHeader eyebrow="Your bookings" title="Sign in to see them" />
 
-            <View className="mb-6 mt-4 flex-row rounded-xl border border-white/10 bg-panel p-1">
+                <Panel className="px-5 py-6">
+                    <Strong>Booking does not need an account</Strong>
+                    <Muted className="mt-1.5 leading-5">
+                        But reading and cancelling one does, so nobody else can read yours. Sign
+                        in with the number you booked on and everything will be here.
+                    </Muted>
+                    <Button
+                        label="Sign in with my number"
+                        className="mt-6"
+                        onPress={() => navigation.navigate('ClientLogin')}
+                    />
+                </Panel>
+            </Screen>
+        );
+    }
+
+    return (
+        <Screen
+            onRefresh={() => void bookings.refetch()}
+            refreshing={bookings.isRefetching}
+        >
+            <ScreenHeader eyebrow="Magnetic" title="Your bookings" />
+
+            <View className="mb-6 flex-row rounded-xl border border-white/[0.08] bg-panel p-1">
                 {(['upcoming', 'past'] as const).map((option) => (
                     <Pressable
                         key={option}
                         accessibilityRole="button"
                         accessibilityState={{ selected: scope === option }}
                         onPress={() => setScope(option)}
-                        className={`flex-1 items-center rounded-lg py-2.5 ${
+                        className={`flex-1 items-center rounded-lg py-3 ${
                             scope === option ? 'bg-gold' : ''
                         }`}
                     >
                         <Body
                             className={`text-sm capitalize ${
-                                scope === option ? 'text-ink font-semibold' : 'text-smoke'
+                                scope === option ? 'font-semibold text-ink' : 'text-smoke'
                             }`}
                         >
                             {option}
@@ -117,7 +151,7 @@ export function MyBookingsScreen() {
                     message={errorMessage(bookings.error)}
                     onRetry={() => void bookings.refetch()}
                 />
-            ) : bookings.data.length === 0 ? (
+            ) : (bookings.data ?? []).length === 0 ? (
                 <EmptyState
                     title={scope === 'upcoming' ? 'Nothing booked yet' : 'No past visits'}
                     body={
@@ -127,7 +161,7 @@ export function MyBookingsScreen() {
                     }
                 />
             ) : (
-                bookings.data.map((appointment) => (
+                (bookings.data ?? []).map((appointment) => (
                     <BookingCard
                         key={appointment.id}
                         appointment={appointment}

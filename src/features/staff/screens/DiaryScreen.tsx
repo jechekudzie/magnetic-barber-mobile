@@ -3,9 +3,10 @@ import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
 
 import { errorMessage } from '@api/client';
 import { fetchDiary, updateAppointmentStatus } from '@api/staff';
-import { Screen } from '@shared/components/Screen';
+import { Panel, Stat, StatRow } from '@shared/components/Panel';
+import { Screen, ScreenHeader } from '@shared/components/Screen';
 import { EmptyState, ErrorState, Loading } from '@shared/components/States';
-import { Body, Gold, Heading, Muted, Title } from '@shared/components/Text';
+import { Body, Eyebrow, Figure, Heading, Muted } from '@shared/components/Text';
 import type { Appointment, AppointmentStatus } from '@shared/types';
 import { useAuthStore } from '@stores/auth';
 
@@ -47,11 +48,11 @@ function DiaryCard({
     );
 
     return (
-        <View className="mb-3 rounded-2xl border border-white/10 bg-panel p-5">
+        <Panel className="mb-3 px-5 py-5">
             <View className="flex-row items-start justify-between">
                 <View className="flex-1 pr-3">
                     <Heading>{appointment.when_label}</Heading>
-                    <Muted className="mt-1">
+                    <Muted className="mt-1.5 leading-5">
                         {appointment.services?.map((s) => s.name).join(', ')}
                     </Muted>
                     {appointment.staff ? (
@@ -60,8 +61,8 @@ function DiaryCard({
                 </View>
 
                 <View className="items-end">
-                    <Gold className="text-lg font-semibold">{appointment.total.formatted}</Gold>
-                    <Muted className="mt-1">{appointment.status_label}</Muted>
+                    <Figure className="text-xl">{appointment.total.formatted}</Figure>
+                    <Muted className="mt-1.5">{appointment.status_label}</Muted>
                 </View>
             </View>
 
@@ -77,7 +78,7 @@ function DiaryCard({
                             accessibilityRole="button"
                             disabled={busy}
                             onPress={() => onMove(move.to)}
-                            className={`mb-2 mr-2 rounded-lg border px-4 py-2 ${
+                            className={`mb-2 mr-2 rounded-lg border px-4 py-2.5 ${
                                 move.destructive ? 'border-stop' : 'border-gold'
                             } ${busy ? 'opacity-50' : ''}`}
                         >
@@ -90,7 +91,7 @@ function DiaryCard({
                     ))}
                 </View>
             ) : null}
-        </View>
+        </Panel>
     );
 }
 
@@ -139,22 +140,23 @@ export function DiaryScreen() {
     const { counts, data, branch } = diary.data;
 
     return (
-        <Screen>
-            <Gold className="text-xs uppercase tracking-[3px]">{branch.name}</Gold>
-            <Title className="mt-2">Today</Title>
+        <Screen onRefresh={() => void diary.refetch()} refreshing={diary.isRefetching}>
+            <ScreenHeader eyebrow={branch.name} title="Today" />
 
-            <View className="mb-6 mt-4 flex-row rounded-2xl border border-white/10 bg-panel p-5">
-                {[
-                    { label: 'Booked', value: counts.total },
-                    { label: 'In chair', value: counts.in_progress },
-                    { label: 'Done', value: counts.completed },
-                ].map((stat) => (
-                    <View key={stat.label} className="flex-1">
-                        <Muted className="uppercase tracking-wide">{stat.label}</Muted>
-                        <Body className="mt-1 text-2xl font-bold">{stat.value}</Body>
-                    </View>
-                ))}
-            </View>
+            <Panel className="mb-7 px-5 py-5">
+                <StatRow>
+                    {[
+                        { label: 'Booked', value: counts.total },
+                        { label: 'In chair', value: counts.in_progress },
+                        { label: 'Done', value: counts.completed },
+                    ].map((stat) => (
+                        <Stat key={stat.label}>
+                            <Eyebrow className="text-smoke">{stat.label}</Eyebrow>
+                            <Figure className="mt-1 text-bone">{stat.value}</Figure>
+                        </Stat>
+                    ))}
+                </StatRow>
+            </Panel>
 
             {data.length === 0 ? (
                 <EmptyState title="Nothing booked today" body="A quiet one, or an early finish." />

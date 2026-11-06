@@ -1,14 +1,23 @@
 import type { NativeStackScreenProps } from '@react-navigation/native-stack';
 import type { BottomTabScreenProps } from '@react-navigation/bottom-tabs';
+import type { CompositeScreenProps } from '@react-navigation/native';
 
-/** Signed out. */
-export type AuthStackParamList = {
-    Welcome: undefined;
-    ClientLogin: undefined;
+/**
+ * The client side is not behind a login.
+ *
+ * Browsing, prices and booking all work signed out, because the website has
+ * never asked for an account and making somebody sign up before they can book
+ * is how a barbershop loses the booking. Signing in is a route inside this
+ * stack rather than a gate in front of it, and it buys one thing: reading and
+ * cancelling your own bookings.
+ */
+export type ClientStackParamList = {
+    Tabs: undefined;
+    /** `then` is where to land once the code checks out. */
+    ClientLogin: { then?: keyof ClientTabParamList } | undefined;
     StaffLogin: undefined;
 };
 
-/** Signed in as a client. */
 export type ClientTabParamList = {
     Home: undefined;
     Prices: undefined;
@@ -16,7 +25,7 @@ export type ClientTabParamList = {
     Bookings: undefined;
 };
 
-/** Signed in as staff. */
+/** Staff do sign in, and see a different app entirely. */
 export type StaffTabParamList = {
     Diary: undefined;
     Earnings: undefined;
@@ -24,14 +33,18 @@ export type StaffTabParamList = {
     Account: undefined;
 };
 
-export type AuthScreenProps<T extends keyof AuthStackParamList> = NativeStackScreenProps<
-    AuthStackParamList,
+export type ClientStackProps<T extends keyof ClientStackParamList> = NativeStackScreenProps<
+    ClientStackParamList,
     T
 >;
 
-export type ClientTabProps<T extends keyof ClientTabParamList> = BottomTabScreenProps<
-    ClientTabParamList,
-    T
+/**
+ * Tab screens need to reach the stack above them to push the login route, so
+ * their navigation prop is both.
+ */
+export type ClientTabProps<T extends keyof ClientTabParamList> = CompositeScreenProps<
+    BottomTabScreenProps<ClientTabParamList, T>,
+    NativeStackScreenProps<ClientStackParamList>
 >;
 
 export type StaffTabProps<T extends keyof StaffTabParamList> = BottomTabScreenProps<

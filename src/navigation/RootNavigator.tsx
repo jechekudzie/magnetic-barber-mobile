@@ -17,7 +17,6 @@ import {
 import { fetchMe } from '@api/auth';
 import { ClientLoginScreen } from '@features/auth/screens/ClientLoginScreen';
 import { StaffLoginScreen } from '@features/auth/screens/StaffLoginScreen';
-import { WelcomeScreen } from '@features/auth/screens/WelcomeScreen';
 import { BookScreen } from '@features/client/screens/BookScreen';
 import { HomeScreen } from '@features/client/screens/HomeScreen';
 import { MyBookingsScreen } from '@features/client/screens/MyBookingsScreen';
@@ -26,34 +25,32 @@ import { AccountScreen } from '@features/staff/screens/AccountScreen';
 import { DiaryScreen } from '@features/staff/screens/DiaryScreen';
 import { EarningsScreen } from '@features/staff/screens/EarningsScreen';
 import { TeamEarningsScreen } from '@features/staff/screens/TeamEarningsScreen';
-import type { AuthStackParamList, ClientTabParamList, StaffTabParamList } from '@navigation/types';
+import type {
+    ClientStackParamList,
+    ClientTabParamList,
+    StaffTabParamList,
+} from '@navigation/types';
 import { useAuthStore } from '@stores/auth';
+import { COLORS } from '@theme/fonts';
 
-const AuthStack = createNativeStackNavigator<AuthStackParamList>();
+const ClientStack = createNativeStackNavigator<ClientStackParamList>();
 const ClientTabs = createBottomTabNavigator<ClientTabParamList>();
 const StaffTabs = createBottomTabNavigator<StaffTabParamList>();
 
 const TAB_STYLE = {
     headerShown: false,
-    tabBarActiveTintColor: '#d9a947',
-    tabBarInactiveTintColor: '#9c9488',
+    tabBarActiveTintColor: COLORS.gold,
+    tabBarInactiveTintColor: COLORS.smoke,
+    tabBarLabelStyle: { fontFamily: 'InstrumentSans_500Medium', fontSize: 11 },
     tabBarStyle: {
-        backgroundColor: '#1b1b1b',
-        borderTopColor: 'rgba(255,255,255,0.08)',
+        backgroundColor: COLORS.panel,
+        borderTopColor: COLORS.hairline,
+        height: 88,
+        paddingTop: 8,
     },
 } as const;
 
-function AuthNavigator() {
-    return (
-        <AuthStack.Navigator screenOptions={{ headerShown: false }}>
-            <AuthStack.Screen name="Welcome" component={WelcomeScreen} />
-            <AuthStack.Screen name="ClientLogin" component={ClientLoginScreen} />
-            <AuthStack.Screen name="StaffLogin" component={StaffLoginScreen} />
-        </AuthStack.Navigator>
-    );
-}
-
-function ClientNavigator() {
+function ClientTabNavigator() {
     return (
         <ClientTabs.Navigator screenOptions={TAB_STYLE}>
             <ClientTabs.Screen
@@ -83,6 +80,29 @@ function ClientNavigator() {
 }
 
 /**
+ * The client app, signed in or not. The login screens are routes inside it,
+ * reached from the Bookings tab or from the home screen, never a wall in
+ * front of the door.
+ */
+function ClientNavigator() {
+    return (
+        <ClientStack.Navigator screenOptions={{ headerShown: false }}>
+            <ClientStack.Screen name="Tabs" component={ClientTabNavigator} />
+            <ClientStack.Screen
+                name="ClientLogin"
+                component={ClientLoginScreen}
+                options={{ presentation: 'modal' }}
+            />
+            <ClientStack.Screen
+                name="StaffLogin"
+                component={StaffLoginScreen}
+                options={{ presentation: 'modal' }}
+            />
+        </ClientStack.Navigator>
+    );
+}
+
+/**
  * The staff side is assembled from permissions rather than from role names.
  *
  * A receptionist, a barber and the owner all hold a staff token and all land
@@ -92,8 +112,6 @@ function ClientNavigator() {
  */
 function StaffNavigator() {
     const permissions = useAuthStore((state) => state.user?.permissions ?? []);
-    const maySeeTeamEarnings = permissions.includes('staff.commission.view');
-    const maySeeOwnEarnings = permissions.includes('report.view.own');
 
     return (
         <StaffTabs.Navigator screenOptions={TAB_STYLE}>
@@ -105,7 +123,7 @@ function StaffNavigator() {
                 }}
             />
 
-            {maySeeOwnEarnings ? (
+            {permissions.includes('report.view.own') ? (
                 <StaffTabs.Screen
                     name="Earnings"
                     component={EarningsScreen}
@@ -115,7 +133,7 @@ function StaffNavigator() {
                 />
             ) : null}
 
-            {maySeeTeamEarnings ? (
+            {permissions.includes('staff.commission.view') ? (
                 <StaffTabs.Screen
                     name="Team"
                     component={TeamEarningsScreen}
@@ -139,7 +157,7 @@ function StaffNavigator() {
 function Splash() {
     return (
         <View className="flex-1 items-center justify-center bg-ink">
-            <ActivityIndicator color="#d9a947" />
+            <ActivityIndicator color={COLORS.gold} />
         </View>
     );
 }
@@ -169,16 +187,13 @@ export function RootNavigator() {
         }
     }, [me.data, setUser]);
 
-    // Hydrating, or holding a token whose profile has not arrived and was not
-    // cached. Showing the sign in screen here would flash it at somebody who
-    // is already signed in.
-    if (!isReady || (token && !user)) {
+    // Still reading the keystore. Deciding which app to build before that
+    // finishes would flash the wrong one at somebody already signed in.
+    if (!isReady) {
         return <Splash />;
     }
 
-    if (!token || !user) {
-        return <AuthNavigator />;
-    }
-
-    return user.is_staff ? <StaffNavigator /> : <ClientNavigator />;
+    // Staff hold a token and see a different app. Everybody else gets the
+    // client app, whether or not they have signed in.
+    return token && user?.is_staff ? <StaffNavigator /> : <ClientNavigator />;
 }

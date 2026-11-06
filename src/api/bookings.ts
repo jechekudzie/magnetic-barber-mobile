@@ -25,6 +25,22 @@ export async function fetchMyBookings(
     return data.data;
 }
 
+/**
+ * Book without an account, as the website does. The account is created by
+ * this first booking, and a number we have seen before lands on its existing
+ * record rather than starting a second file.
+ */
+export async function createGuestBooking(
+    input: BookingInput & { name: string; phone: string },
+): Promise<{ appointment: Appointment; isReturningClient: boolean }> {
+    const { data } = await apiClient.post<{
+        data: Appointment;
+        meta: { is_returning_client: boolean };
+    }>('/bookings/guest', input);
+
+    return { appointment: data.data, isReturningClient: data.meta.is_returning_client };
+}
+
 export async function createBooking(input: BookingInput): Promise<Appointment> {
     const { data } = await apiClient.post<{ data: Appointment }>('/bookings', input);
 

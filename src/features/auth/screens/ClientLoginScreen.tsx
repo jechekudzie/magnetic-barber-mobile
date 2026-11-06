@@ -1,26 +1,32 @@
 import { useState } from 'react';
 import { View } from 'react-native';
+import { useQueryClient } from '@tanstack/react-query';
 
 import { startClientLogin, verifyClientLogin } from '@api/auth';
 import { errorMessage } from '@api/client';
-import type { AuthScreenProps } from '@navigation/types';
+import type { ClientStackProps } from '@navigation/types';
 import { Button } from '@shared/components/Button';
 import { Field } from '@shared/components/Field';
+import { LogoLockup } from '@shared/components/Logo';
+import { Panel } from '@shared/components/Panel';
 import { Screen } from '@shared/components/Screen';
 import { ErrorState } from '@shared/components/States';
-import { Gold, Muted, Title } from '@shared/components/Text';
+import { Display, Eyebrow, Figure, Muted } from '@shared/components/Text';
 import { useAuthStore } from '@stores/auth';
 
 /**
- * Sign in on a phone number.
+ * Signing in on a phone number.
  *
- * Two steps on one screen rather than two screens, because the second step is
- * six digits and pushing a route for it loses the number they just typed if
- * they go back. A client the shop has never met is asked for a name only at
- * the point it is actually needed.
+ * Not a door anyone has to walk through: booking works without it. This buys
+ * a returning client their history, their points and the ability to cancel.
+ *
+ * Both steps live on one screen rather than two. The second step is six
+ * digits, and pushing a route for it loses the number they just typed the
+ * moment they go back.
  */
-export function ClientLoginScreen({ navigation }: AuthScreenProps<'ClientLogin'>) {
+export function ClientLoginScreen({ navigation, route }: ClientStackProps<'ClientLogin'>) {
     const signIn = useAuthStore((state) => state.signIn);
+    const queryClient = useQueryClient();
 
     const [step, setStep] = useState<'phone' | 'code'>('phone');
     const [phone, setPhone] = useState('');
@@ -61,6 +67,16 @@ export function ClientLoginScreen({ navigation }: AuthScreenProps<'ClientLogin'>
             });
 
             await signIn(token, user);
+            // Anything cached was fetched as somebody else, or as nobody.
+            queryClient.clear();
+
+            const landing = route.params?.then;
+
+            if (landing) {
+                navigation.replace('Tabs', { screen: landing } as never);
+            } else {
+                navigation.goBack();
+            }
         } catch (caught) {
             setError(errorMessage(caught, 'That code did not work.'));
         } finally {
@@ -70,17 +86,22 @@ export function ClientLoginScreen({ navigation }: AuthScreenProps<'ClientLogin'>
 
     return (
         <Screen>
-            <Title>{step === 'phone' ? 'Your number' : 'Check your phone'}</Title>
+            <View className="mb-7 items-center pt-4">
+                <LogoLockup width={190} />
+            </View>
 
-            <Muted className="mb-6 mt-2 leading-6">
+            <Eyebrow className="mb-3">{step === 'phone' ? 'Sign in' : 'Almost there'}</Eyebrow>
+            <Display>{step === 'phone' ? 'Your number' : 'Check your phone'}</Display>
+
+            <Muted className="mb-7 mt-3 leading-6">
                 {step === 'phone'
-                    ? 'We will text you a six digit code. No password to remember.'
+                    ? 'We will text you a six digit code. There is no password to remember.'
                     : `We sent a code to ${phone}.`}
             </Muted>
 
             {error ? <ErrorState message={error} /> : null}
 
-            <View className="mt-4">
+            <View className="mt-2">
                 {step === 'phone' ? (
                     <Field
                         label="Mobile number"
@@ -92,6 +113,7 @@ export function ClientLoginScreen({ navigation }: AuthScreenProps<'ClientLogin'>
                         textContentType="telephoneNumber"
                         returnKeyType="go"
                         onSubmitEditing={requestCode}
+                        autoFocus
                     />
                 ) : (
                     <>
@@ -119,10 +141,10 @@ export function ClientLoginScreen({ navigation }: AuthScreenProps<'ClientLogin'>
                         ) : null}
 
                         {devCode ? (
-                            <View className="mb-4 rounded-xl border border-gold/40 bg-panel px-4 py-3">
-                                <Muted>No SMS channel is configured yet, so here is the code:</Muted>
-                                <Gold className="mt-1 text-2xl tracking-[6px]">{devCode}</Gold>
-                            </View>
+                            <Panel accent className="mb-5 px-4 py-4">
+                                <Muted>No SMS channel is configured yet, so here it is:</Muted>
+                                <Figure className="mt-1 tracking-[8px]">{devCode}</Figure>
+                            </Panel>
                         ) : null}
                     </>
                 )}
@@ -152,16 +174,16 @@ export function ClientLoginScreen({ navigation }: AuthScreenProps<'ClientLogin'>
                             setDevCode(null);
                             setError(null);
                         }}
-                        className="mt-2"
+                        className="mt-1"
                     />
                 </>
             )}
 
             <Button
-                label="Back"
+                label="Not now"
                 variant="ghost"
                 onPress={() => navigation.goBack()}
-                className="mt-6"
+                className="mt-4"
             />
         </Screen>
     );

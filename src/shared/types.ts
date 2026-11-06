@@ -46,11 +46,15 @@ export type Me = {
     } | null;
 };
 
+/** Which printed price card a service appears on. */
+export type Audience = 'men' | 'women' | 'unisex' | 'kids';
+
 export type Service = {
     id: string;
     slug: string;
     name: string;
     description: string | null;
+    audience: Audience;
     duration_minutes: number;
     price: Money | null;
     is_free: boolean;

@@ -31,6 +31,33 @@ export async function verifyClientLogin(input: {
     return data;
 }
 
+export async function registerClient(input: {
+    name: string;
+    phone: string;
+    email?: string;
+    password: string;
+}): Promise<{ token: string; user: Me }> {
+    const { data } = await apiClient.post<{ token: string; user: Me }>(
+        '/auth/client/register',
+        input,
+    );
+
+    return data;
+}
+
+/** An email or a phone number, plus a password. */
+export async function clientLogin(input: {
+    identifier: string;
+    password: string;
+}): Promise<{ token: string; user: Me }> {
+    const { data } = await apiClient.post<{ token: string; user: Me }>(
+        '/auth/client/login',
+        input,
+    );
+
+    return data;
+}
+
 export async function staffLogin(input: {
     identifier: string;
     password: string;

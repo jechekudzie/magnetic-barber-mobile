@@ -1,14 +1,30 @@
+import { useState } from 'react';
+import { Pressable, View } from 'react-native';
 import { useQuery } from '@tanstack/react-query';
-import { View } from 'react-native';
 
 import { errorMessage } from '@api/client';
 import { fetchBranches, fetchPriceList } from '@api/catalog';
 import { PriceRow } from '@features/client/components/PriceRow';
 import { Screen, ScreenHeader } from '@shared/components/Screen';
 import { ErrorState, Loading } from '@shared/components/States';
-import { Heading, Muted } from '@shared/components/Text';
+import { Body, Eyebrow, Heading, Muted } from '@shared/components/Text';
+import type { Audience } from '@shared/types';
+
+/**
+ * The shop's two printed cards, as cards.
+ *
+ * Showing one merged list would be wrong rather than merely cluttered: the
+ * same job is priced differently on each card, so a single list has two
+ * entries for a dye at two prices and no way to tell which is yours.
+ */
+const CARDS: Array<{ key: Audience; label: string }> = [
+    { key: 'men', label: "Men's" },
+    { key: 'women', label: 'Ladies' },
+];
 
 export function PriceListScreen() {
+    const [card, setCard] = useState<Audience>('men');
+
     const branches = useQuery({ queryKey: ['branches'], queryFn: fetchBranches });
     const branch = branches.data?.[0];
 
@@ -40,15 +56,47 @@ export function PriceListScreen() {
         );
     }
 
+    // The chosen card, anything priced the same on both, and the kids cut,
+    // which the shop prints on the men's card.
+    const visible = (audience: Audience): boolean =>
+        audience === card || audience === 'unisex' || (audience === 'kids' && card === 'men');
+
+    const categories = (priceList.data ?? [])
+        .map((category) => ({
+            ...category,
+            services: (category.services ?? []).filter((service) => visible(service.audience)),
+        }))
+        .filter((category) => category.services.length > 0);
+
     return (
-        <Screen>
+        <Screen onRefresh={() => void priceList.refetch()} refreshing={priceList.isRefetching}>
             <ScreenHeader eyebrow={branch?.name} title="Price list">
-                <Muted className="mt-3 leading-6">
-                    Clean cuts, fresh looks, confidence.
-                </Muted>
+                <Muted className="mt-3 leading-6">Clean cuts, fresh looks, confidence.</Muted>
             </ScreenHeader>
 
-            {priceList.data?.map((category) => (
+            <View className="mb-7 flex-row rounded-xl border border-white/[0.08] bg-panel p-1">
+                {CARDS.map((option) => (
+                    <Pressable
+                        key={option.key}
+                        accessibilityRole="button"
+                        accessibilityState={{ selected: card === option.key }}
+                        onPress={() => setCard(option.key)}
+                        className={`flex-1 items-center rounded-lg py-3 ${
+                            card === option.key ? 'bg-gold' : ''
+                        }`}
+                    >
+                        <Body
+                            className={`text-sm ${
+                                card === option.key ? 'font-semibold text-ink' : 'text-smoke'
+                            }`}
+                        >
+                            {option.label}
+                        </Body>
+                    </Pressable>
+                ))}
+            </View>
+
+            {categories.map((category) => (
                 <View key={category.id} className="mb-9">
                     <Heading>{category.name}</Heading>
                     {category.tagline ? (
@@ -57,11 +105,15 @@ export function PriceListScreen() {
                         <View className="mb-4" />
                     )}
 
-                    {category.services?.map((service) => (
+                    {category.services.map((service) => (
                         <PriceRow key={service.id} service={service} />
                     ))}
                 </View>
             ))}
+
+            <Eyebrow className="mt-2 text-center text-smoke">
+                Hair · Skin · Beard · Confidence
+            </Eyebrow>
         </Screen>
     );
 }

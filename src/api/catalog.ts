@@ -66,3 +66,25 @@ export async function fetchAvailability(input: {
 
     return data;
 }
+
+/**
+ * The first day the shop can actually take these services.
+ *
+ * The picker opens here rather than on today, because the shop shuts at 19:00
+ * and from about six o'clock there is nowhere left to put a cut — landing a
+ * client on an empty grid reads as a broken app rather than a closed shop.
+ */
+export async function fetchFirstBookableDate(input: {
+    branch: string;
+    serviceIds: string[];
+}): Promise<{ date: string | null; today: string; has_availability: boolean }> {
+    const { data } = await apiClient.get<{
+        date: string | null;
+        today: string;
+        has_availability: boolean;
+    }>('/availability/first', {
+        params: { branch: input.branch, service_ids: input.serviceIds },
+    });
+
+    return data;
+}

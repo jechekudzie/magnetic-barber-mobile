@@ -1,70 +1,57 @@
 import { useState } from 'react';
-import { View } from 'react-native';
+import { Pressable, View } from 'react-native';
 import { useQueryClient } from '@tanstack/react-query';
 
-import { startClientLogin, verifyClientLogin } from '@api/auth';
+import { clientLogin, registerClient } from '@api/auth';
 import { errorMessage } from '@api/client';
 import type { ClientStackProps } from '@navigation/types';
 import { Button } from '@shared/components/Button';
 import { Field } from '@shared/components/Field';
 import { LogoLockup } from '@shared/components/Logo';
-import { Panel } from '@shared/components/Panel';
 import { Screen } from '@shared/components/Screen';
 import { ErrorState } from '@shared/components/States';
-import { Display, Eyebrow, Figure, Muted } from '@shared/components/Text';
+import { Body, Display, Eyebrow, Muted } from '@shared/components/Text';
 import { useAuthStore } from '@stores/auth';
 
+type Mode = 'login' | 'register';
+
 /**
- * Signing in on a phone number.
+ * Client sign in: an email or a phone number, and a password.
  *
- * Not a door anyone has to walk through: booking works without it. This buys
- * a returning client their history, their points and the ability to cancel.
+ * Not a door anyone has to walk through — booking works without it. This buys
+ * a returning client their history, their points, and the ability to cancel.
  *
- * Both steps live on one screen rather than two. The second step is six
- * digits, and pushing a route for it loses the number they just typed the
- * moment they go back.
+ * Registering with a number the shop has already seen attaches a password to
+ * that existing account rather than starting a second file, so somebody who
+ * has been booking as a guest keeps their visits and their points.
  */
 export function ClientLoginScreen({ navigation, route }: ClientStackProps<'ClientLogin'>) {
     const signIn = useAuthStore((state) => state.signIn);
     const queryClient = useQueryClient();
 
-    const [step, setStep] = useState<'phone' | 'code'>('phone');
-    const [phone, setPhone] = useState('');
-    const [code, setCode] = useState('');
+    const [mode, setMode] = useState<Mode>('login');
+    const [identifier, setIdentifier] = useState('');
     const [name, setName] = useState('');
-    const [needsName, setNeedsName] = useState(false);
-    const [devCode, setDevCode] = useState<string | null>(null);
+    const [phone, setPhone] = useState('');
+    const [email, setEmail] = useState('');
+    const [password, setPassword] = useState('');
     const [error, setError] = useState<string | null>(null);
     const [busy, setBusy] = useState(false);
 
-    async function requestCode() {
+    async function submit() {
         setBusy(true);
         setError(null);
 
         try {
-            const response = await startClientLogin(phone);
-
-            setNeedsName(!response.is_registered);
-            // Only ever present while no SMS channel is configured.
-            setDevCode(response.code);
-            setStep('code');
-        } catch (caught) {
-            setError(errorMessage(caught, 'We could not send that code.'));
-        } finally {
-            setBusy(false);
-        }
-    }
-
-    async function submitCode() {
-        setBusy(true);
-        setError(null);
-
-        try {
-            const { token, user } = await verifyClientLogin({
-                phone,
-                code,
-                name: needsName ? name : undefined,
-            });
+            const { token, user } =
+                mode === 'login'
+                    ? await clientLogin({ identifier: identifier.trim(), password })
+                    : await registerClient({
+                          name: name.trim(),
+                          phone: phone.trim(),
+                          email: email.trim() === '' ? undefined : email.trim(),
+                          password,
+                      });
 
             await signIn(token, user);
             // Anything cached was fetched as somebody else, or as nobody.
@@ -78,31 +65,107 @@ export function ClientLoginScreen({ navigation, route }: ClientStackProps<'Clien
                 navigation.goBack();
             }
         } catch (caught) {
-            setError(errorMessage(caught, 'That code did not work.'));
+            setError(
+                errorMessage(
+                    caught,
+                    mode === 'login'
+                        ? 'Those details did not work.'
+                        : 'We could not create that account.',
+                ),
+            );
         } finally {
             setBusy(false);
         }
     }
 
+    const canSubmit =
+        mode === 'login'
+            ? identifier.trim().length > 2 && password.length > 0
+            : name.trim().length >= 2 && phone.trim().length >= 9 && password.length >= 8;
+
     return (
         <Screen>
             <View className="mb-7 items-center pt-4">
-                <LogoLockup width={190} />
+                <LogoLockup width={185} />
             </View>
 
-            <Eyebrow className="mb-3">{step === 'phone' ? 'Sign in' : 'Almost there'}</Eyebrow>
-            <Display>{step === 'phone' ? 'Your number' : 'Check your phone'}</Display>
+            <View className="mb-7 flex-row rounded-xl border border-white/[0.08] bg-panel p-1">
+                {(
+                    [
+                        ['login', 'Sign in'],
+                        ['register', 'Create account'],
+                    ] as const
+                ).map(([value, label]) => (
+                    <Pressable
+                        key={value}
+                        accessibilityRole="button"
+                        accessibilityState={{ selected: mode === value }}
+                        onPress={() => {
+                            setMode(value);
+                            setError(null);
+                        }}
+                        className={`flex-1 items-center rounded-lg py-3 ${
+                            mode === value ? 'bg-gold' : ''
+                        }`}
+                    >
+                        <Body
+                            className={`text-sm ${
+                                mode === value ? 'font-semibold text-ink' : 'text-smoke'
+                            }`}
+                        >
+                            {label}
+                        </Body>
+                    </Pressable>
+                ))}
+            </View>
+
+            <Eyebrow className="mb-3">{mode === 'login' ? 'Welcome back' : 'New here'}</Eyebrow>
+            <Display>{mode === 'login' ? 'Sign in' : 'Create your account'}</Display>
 
             <Muted className="mb-7 mt-3 leading-6">
-                {step === 'phone'
-                    ? 'We will text you a six digit code. There is no password to remember.'
-                    : `We sent a code to ${phone}.`}
+                {mode === 'login'
+                    ? 'Use the email or the mobile number on your account.'
+                    : 'Booked with us before on this number? Your visits and points come with you.'}
             </Muted>
 
             {error ? <ErrorState message={error} /> : null}
 
-            <View className="mt-2">
-                {step === 'phone' ? (
+            {mode === 'login' ? (
+                <>
+                    <Field
+                        label="Email or mobile"
+                        value={identifier}
+                        onChangeText={setIdentifier}
+                        placeholder="078 187 9820"
+                        autoCapitalize="none"
+                        autoCorrect={false}
+                        keyboardType="email-address"
+                        textContentType="username"
+                        autoFocus
+                    />
+
+                    <Field
+                        label="Password"
+                        value={password}
+                        onChangeText={setPassword}
+                        secureTextEntry
+                        textContentType="password"
+                        returnKeyType="go"
+                        onSubmitEditing={submit}
+                    />
+                </>
+            ) : (
+                <>
+                    <Field
+                        label="Your name"
+                        value={name}
+                        onChangeText={setName}
+                        placeholder="Tendai Moyo"
+                        autoCapitalize="words"
+                        textContentType="name"
+                        autoFocus
+                    />
+
                     <Field
                         label="Mobile number"
                         value={phone}
@@ -111,79 +174,45 @@ export function ClientLoginScreen({ navigation, route }: ClientStackProps<'Clien
                         keyboardType="phone-pad"
                         autoComplete="tel"
                         textContentType="telephoneNumber"
+                        hint="This is how the shop knows you."
+                    />
+
+                    <Field
+                        label="Email (optional)"
+                        value={email}
+                        onChangeText={setEmail}
+                        placeholder="you@example.com"
+                        autoCapitalize="none"
+                        autoCorrect={false}
+                        keyboardType="email-address"
+                        textContentType="emailAddress"
+                    />
+
+                    <Field
+                        label="Password"
+                        value={password}
+                        onChangeText={setPassword}
+                        secureTextEntry
+                        textContentType="newPassword"
+                        hint="At least eight characters."
                         returnKeyType="go"
-                        onSubmitEditing={requestCode}
-                        autoFocus
-                    />
-                ) : (
-                    <>
-                        <Field
-                            label="Six digit code"
-                            value={code}
-                            onChangeText={setCode}
-                            placeholder="000000"
-                            keyboardType="number-pad"
-                            maxLength={6}
-                            autoComplete="one-time-code"
-                            textContentType="oneTimeCode"
-                            autoFocus
-                        />
-
-                        {needsName ? (
-                            <Field
-                                label="Your name"
-                                value={name}
-                                onChangeText={setName}
-                                placeholder="Tendai Moyo"
-                                autoCapitalize="words"
-                                hint="We have not met this number before."
-                            />
-                        ) : null}
-
-                        {devCode ? (
-                            <Panel accent className="mb-5 px-4 py-4">
-                                <Muted>No SMS channel is configured yet, so here it is:</Muted>
-                                <Figure className="mt-1 tracking-[8px]">{devCode}</Figure>
-                            </Panel>
-                        ) : null}
-                    </>
-                )}
-            </View>
-
-            {step === 'phone' ? (
-                <Button
-                    label="Send me a code"
-                    onPress={requestCode}
-                    loading={busy}
-                    disabled={phone.trim().length < 9}
-                />
-            ) : (
-                <>
-                    <Button
-                        label="Sign in"
-                        onPress={submitCode}
-                        loading={busy}
-                        disabled={code.trim().length !== 6 || (needsName && name.trim().length < 2)}
-                    />
-                    <Button
-                        label="Use a different number"
-                        variant="ghost"
-                        onPress={() => {
-                            setStep('phone');
-                            setCode('');
-                            setDevCode(null);
-                            setError(null);
-                        }}
-                        className="mt-1"
+                        onSubmitEditing={submit}
                     />
                 </>
             )}
 
             <Button
+                label={mode === 'login' ? 'Sign in' : 'Create account'}
+                onPress={submit}
+                loading={busy}
+                disabled={!canSubmit}
+            />
+
+            <Button
                 label="Not now"
                 variant="ghost"
                 onPress={() => navigation.goBack()}
-                className="mt-4"
+                className="mt-3"
             />
         </Screen>
     );

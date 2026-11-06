@@ -1,27 +1,30 @@
 import { ReactNode } from 'react';
-import { RefreshControl, ScrollView, View } from 'react-native';
-import { LinearGradient } from 'expo-linear-gradient';
+import { Image, RefreshControl, ScrollView, View } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 
 import { LogoMark } from '@shared/components/Logo';
 import { Display, Eyebrow } from '@shared/components/Text';
 import { COLORS } from '@theme/fonts';
 
+const GLOW = require('@assets/brand/glow.png');
+
 /**
- * The dark gold room every screen sits in.
+ * The warm gold wash the website puts behind every headline.
  *
- * The site opens each page with a warm radial glow behind the headline. A
- * radial gradient is awkward on native, so this is the same idea as a soft
- * vertical wash from the top — close enough that the two read as one brand,
- * and cheap enough to put on every screen.
+ * It is a baked PNG rather than a gradient component on purpose. The site's
+ * is a radial gradient anchored at the top centre, which no linear gradient
+ * reproduces, and every gradient library for React Native is a native module
+ * — a new native module means a full rebuild before the app will even start,
+ * which is a steep price for decoration. A 14KB image needs nothing.
  */
 function Glow() {
     return (
-        <LinearGradient
-            colors={['rgba(217,169,71,0.14)', 'rgba(217,169,71,0.03)', 'transparent']}
-            locations={[0, 0.45, 1]}
+        <Image
+            source={GLOW}
+            accessibilityIgnoresInvertColors
             pointerEvents="none"
-            style={{ position: 'absolute', left: 0, right: 0, top: 0, height: 320 }}
+            resizeMode="stretch"
+            style={{ position: 'absolute', left: 0, right: 0, top: 0, height: 300 }}
         />
     );
 }

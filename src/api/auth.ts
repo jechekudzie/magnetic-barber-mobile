@@ -79,3 +79,28 @@ export async function fetchMe(): Promise<Me> {
 
     return data.data;
 }
+
+export async function updateProfile(input: {
+    name?: string;
+    email?: string | null;
+    phone?: string;
+}): Promise<Me> {
+    const { data } = await apiClient.put<{ data: Me }>('/me', input);
+
+    return data.data;
+}
+
+/**
+ * The current password is required even though we already hold a token: a
+ * handset left unlocked on the counter should not be enough to lock its owner
+ * out. Every other device is signed out as a result.
+ */
+export async function changePassword(input: {
+    current_password: string;
+    password: string;
+    password_confirmation: string;
+}): Promise<{ message: string }> {
+    const { data } = await apiClient.put<{ message: string }>('/me/password', input);
+
+    return data;
+}

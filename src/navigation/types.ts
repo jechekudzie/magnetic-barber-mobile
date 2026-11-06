@@ -31,6 +31,7 @@ export type ClientTabParamList = {
     Prices: undefined;
     Book: { serviceId?: string } | undefined;
     Bookings: undefined;
+    Profile: undefined;
 };
 
 /** Staff do sign in, and see a different app entirely. */

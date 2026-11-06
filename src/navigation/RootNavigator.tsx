@@ -22,6 +22,7 @@ import { BookScreen } from '@features/client/screens/BookScreen';
 import { HomeScreen } from '@features/client/screens/HomeScreen';
 import { MyBookingsScreen } from '@features/client/screens/MyBookingsScreen';
 import { PriceListScreen } from '@features/client/screens/PriceListScreen';
+import { ProfileScreen } from '@features/client/screens/ProfileScreen';
 import { AccountScreen } from '@features/staff/screens/AccountScreen';
 import { DiaryScreen } from '@features/staff/screens/DiaryScreen';
 import { EarningsScreen } from '@features/staff/screens/EarningsScreen';
@@ -74,6 +75,13 @@ function ClientTabNavigator() {
                 component={MyBookingsScreen}
                 options={{
                     tabBarIcon: ({ color, size }) => <ReceiptText color={color} size={size} />,
+                }}
+            />
+            <ClientTabs.Screen
+                name="Profile"
+                component={ProfileScreen}
+                options={{
+                    tabBarIcon: ({ color, size }) => <CircleUser color={color} size={size} />,
                 }}
             />
         </ClientTabs.Navigator>

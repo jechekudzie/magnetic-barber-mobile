@@ -148,14 +148,7 @@ export function HomeScreen({ navigation }: ClientTabProps<'Home'>) {
                 </>
             ) : null}
 
-            {!signedIn ? (
-                <Button
-                    label="I work here"
-                    variant="ghost"
-                    onPress={() => navigation.navigate('StaffLogin')}
-                    className="mt-6"
-                />
-            ) : null}
+
         </Screen>
     );
 }

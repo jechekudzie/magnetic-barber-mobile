@@ -3,20 +3,49 @@
   "version": "1.0.0",
   "main": "index.ts",
   "dependencies": {
+    "@hookform/resolvers": "^7.0.3",
+    "@react-native-async-storage/async-storage": "2.2.0",
+    "@react-navigation/bottom-tabs": "^7.21.0",
+    "@react-navigation/native": "^7.5.1",
+    "@react-navigation/native-stack": "^7.21.0",
+    "@tanstack/query-async-storage-persister": "^5.106.1",
+    "@tanstack/react-query": "^5.106.1",
+    "@tanstack/react-query-persist-client": "^5.106.1",
+    "axios": "^1.21.0",
     "expo": "~58.0.23",
+    "expo-constants": "~58.0.15",
+    "expo-dev-client": "~58.0.18",
+    "expo-secure-store": "~58.0.2",
     "expo-status-bar": "~58.0.4",
+    "expo-system-ui": "~58.0.7",
+    "lucide-react-native": "^1.70.0",
+    "nativewind": "^4.2.7",
     "react": "19.3.0",
-    "react-native": "0.88.1"
+    "react-hook-form": "^7.91.0",
+    "react-native": "0.88.1",
+    "react-native-gesture-handler": "~3.3.0",
+    "react-native-reanimated": "4.7.1",
+    "react-native-safe-area-context": "~5.11.1",
+    "react-native-screens": "~4.30.1",
+    "react-native-svg": "15.16.0",
+    "react-native-worklets": "0.13.0",
+    "tailwindcss": "^3.4.19",
+    "zod": "^4.6.7",
+    "zustand": "^5.1.0"
   },
   "devDependencies": {
     "@types/react": "~19.3.0",
+    "babel-plugin-module-resolver": "^5.0.3",
+    "babel-preset-expo": "^58.0.24",
     "typescript": "~6.0.3"
   },
   "scripts": {
     "start": "expo start",
-    "android": "expo start --android",
-    "ios": "expo start --ios",
-    "web": "expo start --web"
+    "android": "expo run:android",
+    "ios": "expo run:ios",
+    "web": "expo start --web",
+    "typecheck": "tsc --noEmit",
+    "bundle:check": "expo export --platform ios --output-dir .expo/bundle-check"
   },
   "private": true
 }

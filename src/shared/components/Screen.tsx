@@ -16,25 +16,30 @@ import { TopBar } from '@shared/components/TopBar';
 import { Display, Eyebrow } from '@shared/components/Text';
 import { COLORS } from '@theme/fonts';
 
-const GLOW = require('@assets/brand/glow.png');
+const ATMOSPHERE = require('@assets/brand/atmosphere.png');
 
 /**
- * The warm gold wash the website puts behind every headline.
+ * The room the app sits in.
  *
- * It is a baked PNG rather than a gradient component on purpose. The site's
- * is a radial gradient anchored at the top centre, which no linear gradient
+ * The printed price cards are not flat black — they are black marble lit
+ * warm from above, with the gold picking up that light. This is the same
+ * idea: a gold wash falling from the top centre, carrying a whisper of
+ * smoke, gone by the middle of the screen.
+ *
+ * A baked PNG rather than a gradient component on purpose. The website's is
+ * a radial gradient anchored at the top centre, which no linear gradient
  * reproduces, and every gradient library for React Native is a native module
- * — a new native module means a full rebuild before the app will even start,
- * which is a steep price for decoration. A 14KB image needs nothing.
+ * — and a new native module means a full rebuild before the app will even
+ * start, which is a steep price for decoration.
  *
- * It is drawn outside the safe area, so the colour runs up behind the status
- * bar and the notch. Inside it, the inset left a flat black band across the
- * top of every screen and the brand appeared to start an inch down the phone.
+ * Drawn outside the safe area, so the colour runs up behind the status bar
+ * and the notch. Inside it, the inset left a flat black band across the top
+ * of every screen and the brand appeared to start an inch down the phone.
  */
-function Glow({ topInset }: { topInset: number }) {
+function Atmosphere({ topInset }: { topInset: number }) {
     return (
         <Image
-            source={GLOW}
+            source={ATMOSPHERE}
             accessibilityIgnoresInvertColors
             pointerEvents="none"
             resizeMode="stretch"
@@ -43,7 +48,9 @@ function Glow({ topInset }: { topInset: number }) {
                 left: 0,
                 right: 0,
                 top: 0,
-                height: 300 + topInset,
+                // Tall enough that the fade finishes off screen rather than
+                // stopping in a visible line partway down.
+                height: 760 + topInset,
             }}
         />
     );
@@ -136,7 +143,7 @@ export function Screen({
     return (
         // The glow sits on this, outside the inset, so it reaches the notch.
         <View className="flex-1 bg-ink">
-            {glow ? <Glow topInset={insets.top} /> : null}
+            {glow ? <Atmosphere topInset={insets.top} /> : null}
 
             <SafeAreaView className="flex-1" edges={['top', 'left', 'right']}>
                 {topBar ? (

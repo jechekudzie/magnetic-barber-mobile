@@ -7,6 +7,7 @@ import { errorMessage } from '@api/client';
 import type { ClientStackProps } from '@navigation/types';
 import { Button } from '@shared/components/Button';
 import { Field } from '@shared/components/Field';
+import { PhoneField, isCompleteNumber, toE164 } from '@shared/components/PhoneField';
 import { LogoLockup } from '@shared/components/Logo';
 import { Screen } from '@shared/components/Screen';
 import { ErrorState } from '@shared/components/States';
@@ -48,7 +49,7 @@ export function ClientLoginScreen({ navigation, route }: ClientStackProps<'Clien
                     ? await clientLogin({ identifier: identifier.trim(), password })
                     : await registerClient({
                           name: name.trim(),
-                          phone: phone.trim(),
+                          phone: toE164(phone),
                           email: email.trim() === '' ? undefined : email.trim(),
                           password,
                       });
@@ -81,7 +82,7 @@ export function ClientLoginScreen({ navigation, route }: ClientStackProps<'Clien
     const canSubmit =
         mode === 'login'
             ? identifier.trim().length > 2 && password.length > 0
-            : name.trim().length >= 2 && phone.trim().length >= 9 && password.length >= 8;
+            : name.trim().length >= 2 && isCompleteNumber(phone) && password.length >= 8;
 
     return (
         <Screen>
@@ -124,7 +125,7 @@ export function ClientLoginScreen({ navigation, route }: ClientStackProps<'Clien
 
             <Muted className="mb-7 mt-3 leading-6">
                 {mode === 'login'
-                    ? 'Use the email or the mobile number on your account.'
+                    ? 'Use the email or the mobile number on your account. The number works however you write it — 0774685845 or +263774685845.'
                     : 'Booked with us before on this number? Your visits and points come with you.'}
             </Muted>
 
@@ -166,15 +167,10 @@ export function ClientLoginScreen({ navigation, route }: ClientStackProps<'Clien
                         autoFocus
                     />
 
-                    <Field
-                        label="Mobile number"
+                    <PhoneField
                         value={phone}
                         onChangeText={setPhone}
-                        placeholder="078 187 9820"
-                        keyboardType="phone-pad"
-                        autoComplete="tel"
-                        textContentType="telephoneNumber"
-                        hint="This is how the shop knows you."
+                        hint="This is how the shop knows you, and how a booking you already made finds you."
                     />
 
                     <Field

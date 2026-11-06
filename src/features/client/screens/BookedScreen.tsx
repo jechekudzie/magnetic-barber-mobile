@@ -44,7 +44,7 @@ function Row({
  * phone and one made on a laptop produce the same slip.
  */
 export function BookedScreen({ navigation, route }: ClientStackProps<'Booked'>) {
-    const { appointment } = route.params;
+    const { appointment, chosenBarber } = route.params;
 
     const user = useAuthStore((state) => state.user);
     const token = useAuthStore((state) => state.token);
@@ -93,8 +93,10 @@ export function BookedScreen({ navigation, route }: ClientStackProps<'Booked'>) 
 
                 <Muted className="mt-4 text-center leading-6">
                     {appointment.when_label}
-                    {appointment.staff?.name ? ` with ${appointment.staff.name}` : ''}. Save your
-                    reference — it is all we need at the desk.
+                    {chosenBarber && appointment.staff?.name
+                        ? ` with ${appointment.staff.name}`
+                        : ''}
+                    . Save your reference — it is all we need at the desk.
                 </Muted>
             </View>
 
@@ -119,6 +121,18 @@ export function BookedScreen({ navigation, route }: ClientStackProps<'Booked'>) 
                         {appointment.staff.title ? (
                             <Muted className="mt-1">{appointment.staff.title}</Muted>
                         ) : null}
+                        {/*
+                          * Say so when the shop picked. Reading "with Tapiwa"
+                          * back to somebody who never chose Tapiwa makes the
+                          * app look like it decided something on their behalf
+                          * and hid it.
+                          */}
+                        {chosenBarber ? null : (
+                            <Muted className="mt-1.5 leading-5">
+                                Assigned by the shop. Ask at the desk if you would rather see
+                                somebody else.
+                            </Muted>
+                        )}
                     </Row>
                 ) : null}
 

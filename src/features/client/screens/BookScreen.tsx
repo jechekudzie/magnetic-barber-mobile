@@ -10,12 +10,14 @@ import {
     fetchBranches,
     fetchFirstBookableDate,
     fetchPriceList,
+    fetchTeam,
 } from '@api/catalog';
 import { PriceRow } from '@features/client/components/PriceRow';
 import { WizardBar } from '@features/client/components/WizardBar';
 import type { ClientTabProps } from '@navigation/types';
 import { Button } from '@shared/components/Button';
 import { Field } from '@shared/components/Field';
+import { PhoneField, isCompleteNumber, toE164 } from '@shared/components/PhoneField';
 import { Panel } from '@shared/components/Panel';
 import { Screen } from '@shared/components/Screen';
 import { EmptyState, ErrorState, Loading } from '@shared/components/States';
@@ -36,7 +38,7 @@ const CARDS: Array<{ key: Audience; title: string; blurb: string }> = [
     { key: 'kids', title: 'Kids', blurb: 'Under 12. Patient chair, no rush' },
 ];
 
-type Step = 'card' | 'service' | 'day' | 'time' | 'details';
+type Step = 'card' | 'service' | 'barber' | 'day' | 'time' | 'details';
 
 /** The fortnight from a given day, as dates the client recognises. */
 function daysFrom(startIso: string, count = 14) {
@@ -87,6 +89,8 @@ export function BookScreen({ navigation }: ClientTabProps<'Book'>) {
     const [step, setStep] = useState<Step>('card');
     const [card, setCard] = useState<Audience | null>(null);
     const [selectedServices, setSelectedServices] = useState<string[]>([]);
+    /** Null means "anyone available", which is its own deliberate choice. */
+    const [barberId, setBarberId] = useState<string | null>(null);
     const [date, setDate] = useState<string | null>(null);
     const [slot, setSlot] = useState<string | null>(null);
     const [name, setName] = useState('');
@@ -101,6 +105,8 @@ export function BookScreen({ navigation }: ClientTabProps<'Book'>) {
         queryFn: () => fetchPriceList(branch!.slug),
         enabled: Boolean(branch),
     });
+
+    const team = useQuery({ queryKey: ['team'], queryFn: fetchTeam });
 
     /*
      * Where the day picker should open. Not today: the shop shuts at 19:00,
@@ -122,9 +128,14 @@ export function BookScreen({ navigation }: ClientTabProps<'Book'>) {
     }, [firstDate.data, date]);
 
     const availability = useQuery({
-        queryKey: ['availability', branch?.slug, date, selectedServices],
+        queryKey: ['availability', branch?.slug, date, selectedServices, barberId],
         queryFn: () =>
-            fetchAvailability({ branch: branch!.slug, date: date!, serviceIds: selectedServices }),
+            fetchAvailability({
+                branch: branch!.slug,
+                date: date!,
+                serviceIds: selectedServices,
+                staff: barberId,
+            }),
         enabled: Boolean(branch) && Boolean(date) && selectedServices.length > 0,
         // A slot somebody took two minutes ago is worse than a slower screen.
         staleTime: 1000 * 30,
@@ -155,8 +166,8 @@ export function BookScreen({ navigation }: ClientTabProps<'Book'>) {
     );
 
     const STEPS: Step[] = signedIn
-        ? ['card', 'service', 'day', 'time']
-        : ['card', 'service', 'day', 'time', 'details'];
+        ? ['card', 'service', 'barber', 'day', 'time']
+        : ['card', 'service', 'barber', 'day', 'time', 'details'];
 
     const stepIndex = STEPS.indexOf(step);
 
@@ -174,6 +185,7 @@ export function BookScreen({ navigation }: ClientTabProps<'Book'>) {
         setStep('card');
         setCard(null);
         setSelectedServices([]);
+        setBarberId(null);
         setDate(null);
         setSlot(null);
         setError(null);
@@ -184,6 +196,8 @@ export function BookScreen({ navigation }: ClientTabProps<'Book'>) {
             const common = {
                 branch: branch!.slug,
                 service_ids: selectedServices,
+                // Null asks the shop to pick, which is what "anyone" means.
+                staff: barberId,
                 start: slot!,
                 type: 'scheduled' as const,
             };
@@ -192,7 +206,13 @@ export function BookScreen({ navigation }: ClientTabProps<'Book'>) {
                 return { appointment: await createBooking(common), isReturningClient: true };
             }
 
-            return createGuestBooking({ ...common, name: name.trim(), phone: phone.trim() });
+            return createGuestBooking({
+                ...common,
+                name: name.trim(),
+                // Always sent with the country code, so there is no way to
+                // store a number the shop cannot dial.
+                phone: toE164(phone),
+            });
         },
         onSuccess: async ({ appointment }) => {
             await queryClient.invalidateQueries({ queryKey: ['my-bookings'] });
@@ -201,7 +221,7 @@ export function BookScreen({ navigation }: ClientTabProps<'Book'>) {
 
             // A slip, not an alert. The reference is what gets read out at the
             // desk, and an alert throws it away on the tap everyone makes.
-            navigation.navigate('Booked', { appointment });
+            navigation.navigate('Booked', { appointment, chosenBarber: barberId !== null });
         },
         onError: (caught) => setError(errorMessage(caught, 'We could not hold that slot.')),
     });
@@ -215,14 +235,16 @@ export function BookScreen({ navigation }: ClientTabProps<'Book'>) {
     }
 
     const slots = availability.data?.any_staff ?? [];
-    const detailsDone = name.trim().length >= 2 && phone.trim().length >= 9;
+    const detailsDone = name.trim().length >= 2 && isCompleteNumber(phone);
 
     const canAdvance =
         step === 'card'
             ? card !== null
             : step === 'service'
               ? selectedServices.length > 0
-              : step === 'day'
+              : step === 'barber'
+                ? true
+                : step === 'day'
                 ? date !== null
                 : step === 'time'
                   ? slot !== null
@@ -353,6 +375,60 @@ export function BookScreen({ navigation }: ClientTabProps<'Book'>) {
                 </>
             ) : null}
 
+            {step === 'barber' ? (
+                <>
+                    <Display>Who with?</Display>
+                    <Muted className="mb-7 mt-3 leading-6">
+                        Ask for somebody by name, or leave it to the shop and take the first
+                        chair that is free.
+                    </Muted>
+
+                    <Panel
+                        accent={barberId === null}
+                        className="mb-2.5 px-5 py-5"
+                        onPress={() => {
+                            setBarberId(null);
+                            setDate(null);
+                            setSlot(null);
+                        }}
+                    >
+                        <Strong className="text-lg">Anyone available</Strong>
+                        <Muted className="mt-1.5 leading-5">
+                            Usually the earliest appointment. The shop assigns a barber and tells
+                            you who on the confirmation.
+                        </Muted>
+                    </Panel>
+
+                    {team.isPending ? (
+                        <Loading label="Finding the team" />
+                    ) : (
+                        (team.data ?? []).map((member) => (
+                            <Panel
+                                key={member.id}
+                                accent={barberId === member.id}
+                                className="mb-2.5 px-5 py-5"
+                                onPress={() => {
+                                    setBarberId(member.id);
+                                    // A named barber has their own diary.
+                                    setDate(null);
+                                    setSlot(null);
+                                }}
+                            >
+                                <Strong className="text-lg">{member.name}</Strong>
+                                {member.title ? (
+                                    <Muted className="mt-1">{member.title}</Muted>
+                                ) : null}
+                                {member.specialities.length > 0 ? (
+                                    <Muted className="mt-1.5 leading-5">
+                                        {member.specialities.join(' · ')}
+                                    </Muted>
+                                ) : null}
+                            </Panel>
+                        ))
+                    )}
+                </>
+            ) : null}
+
             {step === 'day' ? (
                 <>
                     <Display>Which day?</Display>
@@ -475,14 +551,9 @@ export function BookScreen({ navigation }: ClientTabProps<'Book'>) {
                         textContentType="name"
                     />
 
-                    <Field
-                        label="Mobile number"
+                    <PhoneField
                         value={phone}
                         onChangeText={setPhone}
-                        placeholder="078 187 9820"
-                        keyboardType="phone-pad"
-                        autoComplete="tel"
-                        textContentType="telephoneNumber"
                         hint="So the shop can reach you if anything changes."
                     />
 
@@ -500,6 +571,10 @@ export function BookScreen({ navigation }: ClientTabProps<'Book'>) {
                         <Muted className="mt-4 leading-5">
                             {availability.data?.any_staff.find((s) => s.start === slot)?.label} ·{' '}
                             {date}
+                            {'\n'}
+                            {barberId === null
+                                ? 'With whoever is free'
+                                : `With ${team.data?.find((m) => m.id === barberId)?.name ?? 'your barber'}`}
                         </Muted>
                     </Panel>
                 </>

@@ -15,8 +15,12 @@ import type { Appointment } from '@shared/types';
  */
 export type ClientStackParamList = {
     Tabs: undefined;
-    /** The confirmation slip, carrying the booking it is confirming. */
-    Booked: { appointment: Appointment };
+    /**
+     * The confirmation slip. chosenBarber says whether the client asked for
+     * that barber by name or the shop assigned one, which changes how the
+     * slip is allowed to word it.
+     */
+    Booked: { appointment: Appointment; chosenBarber: boolean };
     /** `then` is where to land once the code checks out. */
     ClientLogin: { then?: keyof ClientTabParamList } | undefined;
     StaffLogin: undefined;

@@ -88,3 +88,21 @@ export async function fetchFirstBookableDate(input: {
 
     return data;
 }
+
+export type TeamMember = {
+    id: string;
+    slug: string;
+    name: string;
+    title: string | null;
+    specialities: string[];
+    photo_url: string | null;
+    accepts_house_calls: boolean;
+    is_bookable: boolean;
+};
+
+/** The barbers a client may ask for by name. */
+export async function fetchTeam(): Promise<TeamMember[]> {
+    const { data } = await apiClient.get<{ data: TeamMember[] }>('/team');
+
+    return data.data.filter((member) => member.is_bookable);
+}

@@ -2,6 +2,8 @@ import type { NativeStackScreenProps } from '@react-navigation/native-stack';
 import type { BottomTabScreenProps } from '@react-navigation/bottom-tabs';
 import type { CompositeScreenProps } from '@react-navigation/native';
 
+import type { Appointment } from '@shared/types';
+
 /**
  * The client side is not behind a login.
  *
@@ -13,6 +15,8 @@ import type { CompositeScreenProps } from '@react-navigation/native';
  */
 export type ClientStackParamList = {
     Tabs: undefined;
+    /** The confirmation slip, carrying the booking it is confirming. */
+    Booked: { appointment: Appointment };
     /** `then` is where to land once the code checks out. */
     ClientLogin: { then?: keyof ClientTabParamList } | undefined;
     StaffLogin: undefined;

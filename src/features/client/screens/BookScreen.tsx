@@ -1,5 +1,5 @@
 import { useEffect, useMemo, useState } from 'react';
-import { Alert, Pressable, View } from 'react-native';
+import { Pressable, View } from 'react-native';
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
 import { ChevronLeft } from 'lucide-react-native';
 
@@ -199,23 +199,9 @@ export function BookScreen({ navigation }: ClientTabProps<'Book'>) {
             await queryClient.invalidateQueries({ queryKey: ['availability'] });
             restart();
 
-            if (signedIn) {
-                navigation.navigate('Bookings');
-
-                return;
-            }
-
-            Alert.alert(
-                'You are booked',
-                `${appointment.when_label}. Your reference is ${appointment.reference}.\n\nCreate a password any time to see or cancel it.`,
-                [
-                    { text: 'Done', style: 'cancel' },
-                    {
-                        text: 'Create account',
-                        onPress: () => navigation.navigate('ClientLogin', { then: 'Bookings' }),
-                    },
-                ],
-            );
+            // A slip, not an alert. The reference is what gets read out at the
+            // desk, and an alert throws it away on the tap everyone makes.
+            navigation.navigate('Booked', { appointment });
         },
         onError: (caught) => setError(errorMessage(caught, 'We could not hold that slot.')),
     });

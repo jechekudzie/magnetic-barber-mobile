@@ -17,6 +17,7 @@ import {
 import { fetchMe } from '@api/auth';
 import { ClientLoginScreen } from '@features/auth/screens/ClientLoginScreen';
 import { StaffLoginScreen } from '@features/auth/screens/StaffLoginScreen';
+import { BookedScreen } from '@features/client/screens/BookedScreen';
 import { BookScreen } from '@features/client/screens/BookScreen';
 import { HomeScreen } from '@features/client/screens/HomeScreen';
 import { MyBookingsScreen } from '@features/client/screens/MyBookingsScreen';
@@ -88,6 +89,13 @@ function ClientNavigator() {
     return (
         <ClientStack.Navigator screenOptions={{ headerShown: false }}>
             <ClientStack.Screen name="Tabs" component={ClientTabNavigator} />
+            <ClientStack.Screen
+                name="Booked"
+                component={BookedScreen}
+                // No swipe back: the booking is made, and sliding back into a
+                // half filled wizard invites somebody to book it twice.
+                options={{ gestureEnabled: false }}
+            />
             <ClientStack.Screen
                 name="ClientLogin"
                 component={ClientLoginScreen}

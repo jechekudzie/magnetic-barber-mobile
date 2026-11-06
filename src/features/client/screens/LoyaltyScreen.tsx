@@ -4,7 +4,7 @@ import { Gift, Minus, Plus } from 'lucide-react-native';
 
 import { fetchLoyalty } from '@api/bookings';
 import { errorMessage } from '@api/client';
-import type { ClientTabProps } from '@navigation/types';
+import type { ClientStackProps } from '@navigation/types';
 import { Button } from '@shared/components/Button';
 import { Panel } from '@shared/components/Panel';
 import { Screen, ScreenHeader } from '@shared/components/Screen';
@@ -24,7 +24,7 @@ import { useAuthStore } from '@stores/auth';
  * Nothing here spends points. They come off a bill during booking, where
  * there is a bill to take them off.
  */
-export function LoyaltyScreen({ navigation }: ClientTabProps<'Loyalty'>) {
+export function LoyaltyScreen({ navigation }: ClientStackProps<'Loyalty'>) {
     const user = useAuthStore((state) => state.user);
     const token = useAuthStore((state) => state.token);
     const signedIn = Boolean(token && user && !user.is_staff);
@@ -38,7 +38,7 @@ export function LoyaltyScreen({ navigation }: ClientTabProps<'Loyalty'>) {
 
     if (!signedIn) {
         return (
-            <Screen topBar={{ title: 'Points' }}>
+            <Screen topBar={{ title: 'Points', onBack: () => navigation.goBack() }}>
                 <ScreenHeader eyebrow="Loyalty" title="Every cut counts" />
 
                 <Panel className="px-5 py-6">
@@ -81,7 +81,7 @@ export function LoyaltyScreen({ navigation }: ClientTabProps<'Loyalty'>) {
 
     return (
         <Screen
-            topBar={{ title: 'Points', onBell: () => navigation.navigate('Notifications') }}
+            topBar={{ title: 'Points', onBack: () => navigation.goBack() }}
             onRefresh={() => void loyalty.refetch()}
             refreshing={loyalty.isRefetching}
         >
@@ -121,7 +121,7 @@ export function LoyaltyScreen({ navigation }: ClientTabProps<'Loyalty'>) {
             <Button
                 label="Book a cut"
                 className="mt-5"
-                onPress={() => navigation.navigate('Book')}
+                onPress={() => navigation.navigate('Tabs', { screen: 'Book' } as never)}
             />
 
             <Heading className="mb-3 mt-9">How you got here</Heading>

@@ -194,3 +194,24 @@ export type Diary = {
     };
     data: Appointment[];
 };
+
+/**
+ * A numbered look from the gallery.
+ *
+ * The code is the point: a client says "number 03" and every barber cuts the
+ * same thing. It is carried as a string because "01" is not 1.
+ */
+export type Style = {
+    id: string;
+    slug: string;
+    code: string;
+    name: string;
+    description: string | null;
+    gender_tag: Audience;
+    gender_label: string;
+    hair_type_tag: string[];
+    typical_duration_minutes: number;
+    image_url: string | null;
+    is_featured: boolean;
+    service: Service | null;
+};

@@ -30,6 +30,10 @@ export type ClientStackParamList = {
     Pay: { id: string };
     /** Where the bell goes. */
     Notifications: undefined;
+    /** The numbered gallery, reached from home or the price list. */
+    Styles: undefined;
+    /** Points and the ledger, reached from home or the account. */
+    Loyalty: undefined;
 };
 
 /**
@@ -44,9 +48,8 @@ export type StaffStackParamList = {
 export type ClientTabParamList = {
     Home: undefined;
     Prices: undefined;
-    Book: { serviceId?: string } | undefined;
+    Book: { serviceId?: string; styleId?: string } | undefined;
     Bookings: undefined;
-    Loyalty: undefined;
     Profile: undefined;
 };
 

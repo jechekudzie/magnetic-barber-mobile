@@ -79,7 +79,7 @@ function money(cents: number): string {
  * It works signed out. A client who has not signed in gives a name and a
  * number at the last step, and that booking creates their account.
  */
-export function BookScreen({ navigation }: ClientTabProps<'Book'>) {
+export function BookScreen({ navigation, route }: ClientTabProps<'Book'>) {
     const queryClient = useQueryClient();
 
     const user = useAuthStore((state) => state.user);
@@ -96,6 +96,9 @@ export function BookScreen({ navigation }: ClientTabProps<'Book'>) {
     const [name, setName] = useState('');
     const [phone, setPhone] = useState('');
     const [error, setError] = useState<string | null>(null);
+
+    /** Set when somebody arrived here by tapping a look in the gallery. */
+    const [styleId, setStyleId] = useState<string | null>(null);
 
     const branches = useQuery({ queryKey: ['branches'], queryFn: fetchBranches });
     const branch = branches.data?.[0];
@@ -120,6 +123,27 @@ export function BookScreen({ navigation }: ClientTabProps<'Book'>) {
         enabled: Boolean(branch) && selectedServices.length > 0,
         staleTime: 1000 * 60,
     });
+
+    /*
+     * Arriving from the gallery: the look names the service it is cut as, so
+     * the first two steps are already answered. Skipping straight to the
+     * barber saves asking a client who has just told us what they want.
+     */
+    useEffect(() => {
+        const incoming = route.params;
+
+        if (!incoming?.serviceId) {
+            return;
+        }
+
+        setSelectedServices([incoming.serviceId]);
+        setStyleId(incoming.styleId ?? null);
+        setCard(null);
+        setStep('barber');
+
+        // Consumed, so coming back to the tab later starts clean.
+        navigation.setParams({ serviceId: undefined, styleId: undefined });
+    }, [route.params, navigation]);
 
     useEffect(() => {
         if (firstDate.data?.date && date === null) {
@@ -165,9 +189,20 @@ export function BookScreen({ navigation }: ClientTabProps<'Book'>) {
         [firstDate.data?.date],
     );
 
-    const STEPS: Step[] = signedIn
-        ? ['card', 'service', 'barber', 'day', 'time']
-        : ['card', 'service', 'barber', 'day', 'time', 'details'];
+    /*
+     * Somebody who came from the gallery has already said what they want, so
+     * the card and service steps drop out of the path rather than sitting
+     * behind them as steps they appear to have skipped.
+     */
+    const fromGallery = styleId !== null;
+
+    const STEPS: Step[] = [
+        ...(fromGallery ? [] : (['card', 'service'] as Step[])),
+        'barber',
+        'day',
+        'time',
+        ...(signedIn ? [] : (['details'] as Step[])),
+    ];
 
     const stepIndex = STEPS.indexOf(step);
 
@@ -185,6 +220,7 @@ export function BookScreen({ navigation }: ClientTabProps<'Book'>) {
         setStep('card');
         setCard(null);
         setSelectedServices([]);
+        setStyleId(null);
         setBarberId(null);
         setDate(null);
         setSlot(null);
@@ -198,6 +234,8 @@ export function BookScreen({ navigation }: ClientTabProps<'Book'>) {
                 service_ids: selectedServices,
                 // Null asks the shop to pick, which is what "anyone" means.
                 staff: barberId,
+                // The look they picked, so the barber knows what was meant.
+                style: styleId,
                 start: slot!,
                 type: 'scheduled' as const,
             };

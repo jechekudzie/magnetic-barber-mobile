@@ -6,7 +6,6 @@ import { createBottomTabNavigator } from '@react-navigation/bottom-tabs';
 import {
     CalendarDays,
     CircleUser,
-    Gift,
     House,
     ReceiptText,
     Scissors,
@@ -28,6 +27,7 @@ import { HomeScreen } from '@features/client/screens/HomeScreen';
 import { MyBookingsScreen } from '@features/client/screens/MyBookingsScreen';
 import { PriceListScreen } from '@features/client/screens/PriceListScreen';
 import { ProfileScreen } from '@features/client/screens/ProfileScreen';
+import { StylesScreen } from '@features/client/screens/StylesScreen';
 import { AccountScreen } from '@features/staff/screens/AccountScreen';
 import { DiaryScreen } from '@features/staff/screens/DiaryScreen';
 import { EarningsScreen } from '@features/staff/screens/EarningsScreen';
@@ -86,11 +86,6 @@ function ClientTabNavigator() {
                 }}
             />
             <ClientTabs.Screen
-                name="Loyalty"
-                component={LoyaltyScreen}
-                options={{ tabBarIcon: ({ color, size }) => <Gift color={color} size={size} /> }}
-            />
-            <ClientTabs.Screen
                 name="Profile"
                 component={ProfileScreen}
                 options={{
@@ -130,6 +125,8 @@ function ClientNavigator() {
             <ClientStack.Screen name="BookingDetail" component={BookingDetailScreen} />
             <ClientStack.Screen name="Pay" component={PayScreen} />
             <ClientStack.Screen name="Notifications" component={NotificationsScreen} />
+            <ClientStack.Screen name="Styles" component={StylesScreen} />
+            <ClientStack.Screen name="Loyalty" component={LoyaltyScreen} />
         </ClientStack.Navigator>
     );
 }

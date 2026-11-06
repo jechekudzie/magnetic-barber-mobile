@@ -5,9 +5,11 @@ import { useQuery } from '@tanstack/react-query';
 import { errorMessage } from '@api/client';
 import { fetchBranches, fetchPriceList } from '@api/catalog';
 import { PriceRow } from '@features/client/components/PriceRow';
+import type { ClientTabProps } from '@navigation/types';
+import { Panel } from '@shared/components/Panel';
 import { Screen, ScreenHeader } from '@shared/components/Screen';
 import { ErrorState, Loading } from '@shared/components/States';
-import { Body, Eyebrow, Heading, Muted } from '@shared/components/Text';
+import { Body, Eyebrow, Heading, Muted, Strong } from '@shared/components/Text';
 import type { Audience } from '@shared/types';
 
 /**
@@ -22,7 +24,7 @@ const CARDS: Array<{ key: Audience; label: string }> = [
     { key: 'women', label: 'Ladies' },
 ];
 
-export function PriceListScreen() {
+export function PriceListScreen({ navigation }: ClientTabProps<'Prices'>) {
     const [card, setCard] = useState<Audience>('men');
 
     const branches = useQuery({ queryKey: ['branches'], queryFn: fetchBranches });
@@ -114,6 +116,17 @@ export function PriceListScreen() {
                     ))}
                 </View>
             ))}
+
+            <Panel
+                className="mb-6 px-5 py-5"
+                onPress={() => navigation.navigate('Styles')}
+            >
+                <Strong>The numbered gallery</Strong>
+                <Muted className="mt-1.5 leading-5">
+                    Twelve looks with a number each. Pick one and we will book the service it
+                    is cut as.
+                </Muted>
+            </Panel>
 
             <Eyebrow className="mt-2 text-center text-smoke">
                 Hair · Skin · Beard · Confidence

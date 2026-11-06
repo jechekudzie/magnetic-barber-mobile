@@ -65,6 +65,15 @@ export function HomeScreen({ navigation }: ClientTabProps<'Home'>) {
                 </Panel>
             ) : null}
 
+            {signedIn && user?.client ? (
+                <Button
+                    label="See your points"
+                    variant="ghost"
+                    className="mb-7 -mt-4 self-start px-0"
+                    onPress={() => navigation.navigate('Loyalty')}
+                />
+            ) : null}
+
             <Heading className="mb-3">{signedIn ? 'Your next cut' : 'Book a chair'}</Heading>
 
             {next ? (
@@ -132,6 +141,22 @@ export function HomeScreen({ navigation }: ClientTabProps<'Home'>) {
                     />
                 </Panel>
             ) : null}
+
+            <Panel
+                className="mt-3 px-5 py-5"
+                onPress={() => navigation.navigate('Styles')}
+            >
+                <View className="flex-row items-center">
+                    <View className="flex-1 pr-3">
+                        <Strong>Know the number you want?</Strong>
+                        <Muted className="mt-1.5 leading-5">
+                            Twelve looks, each with a number. Say it at the desk and every
+                            barber cuts the same thing.
+                        </Muted>
+                    </View>
+                    <ChevronRight size={18} color={COLORS.smoke} />
+                </View>
+            </Panel>
 
             {branch ? (
                 <>

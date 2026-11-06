@@ -134,6 +134,16 @@ export function ProfileScreen({ navigation }: ClientTabProps<'Profile'>) {
                 </Panel>
             ) : null}
 
+            <Panel
+                className="mb-8 px-5 py-5"
+                onPress={() => navigation.navigate('Loyalty')}
+            >
+                <Strong>Points and how you earned them</Strong>
+                <Muted className="mt-1.5 leading-5">
+                    Every visit, every reward, with the booking against each one.
+                </Muted>
+            </Panel>
+
             <Heading className="mb-3">Your details</Heading>
 
             {editing ? (

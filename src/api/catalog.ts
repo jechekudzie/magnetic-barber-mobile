@@ -1,5 +1,5 @@
 import apiClient from '@api/client';
-import type { Availability, ServiceCategory } from '@shared/types';
+import type { Availability, ServiceCategory, Style } from '@shared/types';
 
 /** Mirrors BranchResource. map_url is nested under address, not top level. */
 export type BranchSummary = {
@@ -105,4 +105,10 @@ export async function fetchTeam(): Promise<TeamMember[]> {
     const { data } = await apiClient.get<{ data: TeamMember[] }>('/team');
 
     return data.data.filter((member) => member.is_bookable);
+}
+
+export async function fetchStyles(): Promise<Style[]> {
+    const { data } = await apiClient.get<{ data: Style[] }>('/styles');
+
+    return data.data;
 }

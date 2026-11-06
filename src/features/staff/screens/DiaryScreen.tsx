@@ -1,9 +1,11 @@
+import { useMemo, useState } from 'react';
 import { Alert, Pressable, View } from 'react-native';
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
 
 import { errorMessage } from '@api/client';
 import { fetchDiary, updateAppointmentStatus } from '@api/staff';
 import { Panel, Stat, StatRow } from '@shared/components/Panel';
+import { Field } from '@shared/components/Field';
 import { Screen, ScreenHeader } from '@shared/components/Screen';
 import { EmptyState, ErrorState, Loading } from '@shared/components/States';
 import { Body, Eyebrow, Figure, Heading, Muted } from '@shared/components/Text';
@@ -100,6 +102,7 @@ function DiaryCard({
 
 export function DiaryScreen({ navigation }: StaffTabProps<'Diary'>) {
     const queryClient = useQueryClient();
+    const [search, setSearch] = useState('');
     const permissions = useAuthStore((state) => state.user?.permissions ?? []);
 
     const diary = useQuery({
@@ -142,6 +145,22 @@ export function DiaryScreen({ navigation }: StaffTabProps<'Diary'>) {
 
     const { counts, data, branch } = diary.data;
 
+    /*
+     * A client arriving says "MB-AGZDA9" or gives their name. Reception
+     * should not have to read down a column to find them, so the filter
+     * matches either, and ignores the dash people leave out.
+     */
+    const needle = search.trim().toLowerCase().replace(/-/g, '');
+
+    const shown = needle === ''
+        ? data
+        : data.filter((appointment) => {
+            const reference = appointment.reference.toLowerCase().replace(/-/g, '');
+            const name = (appointment.client?.name ?? '').toLowerCase();
+
+            return reference.includes(needle) || name.includes(needle);
+        });
+
     return (
         <Screen
             onRefresh={() => void diary.refetch()}
@@ -165,10 +184,26 @@ export function DiaryScreen({ navigation }: StaffTabProps<'Diary'>) {
                 </StatRow>
             </Panel>
 
-            {data.length === 0 ? (
-                <EmptyState title="Nothing booked today" body="A quiet one, or an early finish." />
+            <Field
+                label="Find a booking"
+                value={search}
+                onChangeText={setSearch}
+                placeholder="Reference or name"
+                autoCapitalize="characters"
+                autoCorrect={false}
+            />
+
+            {shown.length === 0 ? (
+                <EmptyState
+                    title={needle === '' ? 'Nothing booked today' : 'Nobody by that'}
+                    body={
+                        needle === ''
+                            ? 'A quiet one, or an early finish.'
+                            : 'Check the reference, or look at another day.'
+                    }
+                />
             ) : (
-                data.map((appointment) => (
+                shown.map((appointment) => (
                     <DiaryCard
                         key={appointment.id}
                         appointment={appointment}

@@ -7,6 +7,7 @@ import { fetchPaymentState, submitPayment } from '@api/bookings';
 import { errorMessage } from '@api/client';
 import type { ClientStackProps } from '@navigation/types';
 import { Button } from '@shared/components/Button';
+import { isPickerAvailable, pickPhoto } from '@shared/imagePicker';
 import { Field } from '@shared/components/Field';
 import { Panel } from '@shared/components/Panel';
 import { Screen } from '@shared/components/Screen';
@@ -66,39 +67,11 @@ export function PayScreen({ navigation, route }: ClientStackProps<'Pay'>) {
         onError: (caught) => Alert.alert('We could not record that', errorMessage(caught)),
     });
 
-    /**
-     * Picking a screenshot needs the photo library, which is a native module
-     * this build may not carry. Rather than crash, the reference alone is
-     * enough — it is what the desk actually checks against the statement.
-     */
     async function attachProof() {
-        try {
-            const picker = await import('expo-image-picker');
+        const picked = await pickPhoto();
 
-            const permission = await picker.requestMediaLibraryPermissionsAsync();
-
-            if (!permission.granted) {
-                Alert.alert(
-                    'Photos not allowed',
-                    'You can still send the reference on its own.',
-                );
-
-                return;
-            }
-
-            const result = await picker.launchImageLibraryAsync({
-                mediaTypes: ['images'],
-                quality: 0.7,
-            });
-
-            if (!result.canceled) {
-                setProofUri(result.assets[0].uri);
-            }
-        } catch {
-            Alert.alert(
-                'Cannot open photos',
-                'This build has no photo access yet. Send the reference on its own and the shop will check it against the statement.',
-            );
+        if (picked) {
+            setProofUri(picked.uri);
         }
     }
 
@@ -171,6 +144,20 @@ export function PayScreen({ navigation, route }: ClientStackProps<'Pay'>) {
                         </Muted>
                     </Panel>
 
+                    {/*
+                      * Paying ahead is not compulsory. Somebody who turns up
+                      * with cash is a normal client, and a screen that only
+                      * offers to take money now reads as though they are not.
+                      */}
+                    <Panel className="mt-3 px-5 py-5">
+                        <Strong>Or just pay at the shop</Strong>
+                        <Muted className="mt-1.5 leading-5">
+                            Cash or card at the counter is fine. Give the desk your reference and
+                            they will find you and take it then. Paying ahead only means your
+                            chair is held before you get here.
+                        </Muted>
+                    </Panel>
+
                     <Eyebrow className="mb-3 mt-8 text-smoke">How did you send it?</Eyebrow>
 
                     <View className="mb-5 flex-row flex-wrap">
@@ -203,7 +190,11 @@ export function PayScreen({ navigation, route }: ClientStackProps<'Pay'>) {
                         hint={`The code ${chosen?.label ?? 'your provider'} sent you.`}
                     />
 
-                    <Eyebrow className="mb-3 text-smoke">Screenshot (optional)</Eyebrow>
+                    <Eyebrow className="mb-3 text-smoke">
+                        {isPickerAvailable()
+                            ? 'Screenshot (optional)'
+                            : 'Screenshot (next build)'}
+                    </Eyebrow>
 
                     {proofUri ? (
                         <Panel className="mb-5 overflow-hidden p-0">
@@ -232,8 +223,9 @@ export function PayScreen({ navigation, route }: ClientStackProps<'Pay'>) {
                         >
                             <Camera size={22} color={COLORS.gold} />
                             <Muted className="mt-2.5 text-center leading-5">
-                                Add the confirmation screenshot.{'\n'}It helps the desk check it
-                                faster.
+                                {isPickerAvailable()
+                                    ? 'Add the confirmation screenshot.\nIt helps the desk check it faster.'
+                                    : 'Photos are not in this build yet.\nThe reference on its own is enough.'}
                             </Muted>
                         </Pressable>
                     )}

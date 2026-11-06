@@ -10,6 +10,7 @@ import {
 import { SafeAreaView, useSafeAreaInsets } from 'react-native-safe-area-context';
 
 import { LogoMark } from '@shared/components/Logo';
+import { TopBar } from '@shared/components/TopBar';
 import { Display, Eyebrow } from '@shared/components/Text';
 import { COLORS } from '@theme/fonts';
 
@@ -56,6 +57,7 @@ export function Screen({
     onRefresh,
     refreshing = false,
     glow = true,
+    topBar,
 }: {
     children: ReactNode;
     scroll?: boolean;
@@ -63,6 +65,8 @@ export function Screen({
     onRefresh?: () => void;
     refreshing?: boolean;
     glow?: boolean;
+    /** The bar across the top: mark or back, a label, and the bell. */
+    topBar?: { title?: string; onBack?: () => void; unread?: number; onBell?: () => void };
 }) {
     const insets = useSafeAreaInsets();
 
@@ -97,6 +101,8 @@ export function Screen({
         <SafeAreaView className="flex-1 bg-ink" edges={['top', 'left', 'right']}>
             {glow ? <Glow /> : null}
 
+            {topBar ? <TopBar {...topBar} /> : null}
+
             <KeyboardAvoidingView
                 className="flex-1"
                 behavior={Platform.OS === 'ios' ? 'padding' : 'height'}
@@ -124,7 +130,7 @@ export function ScreenHeader({
     eyebrow,
     title,
     children,
-    withMark = true,
+    withMark = false,
 }: {
     eyebrow?: string;
     title: string;

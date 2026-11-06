@@ -54,3 +54,64 @@ export async function cancelBooking(id: string, reason?: string): Promise<Appoin
 
     return data.data;
 }
+
+export type PaymentMethodOption = {
+    value: string;
+    label: string;
+    needs_proof: boolean;
+};
+
+export type PaymentState = {
+    due: { cents: number; formatted: string };
+    total: { cents: number; formatted: string };
+    paid: { cents: number; formatted: string };
+    is_secured: boolean;
+    methods: PaymentMethodOption[];
+    data: Array<{
+        id: string;
+        method_label: string;
+        status: string;
+        status_label: string;
+        amount: { formatted: string };
+        reference: string | null;
+        proof_url: string | null;
+        rejection_reason: string | null;
+        created_at: string | null;
+    }>;
+};
+
+export async function fetchPaymentState(id: string): Promise<PaymentState> {
+    const { data } = await apiClient.get<PaymentState>(`/bookings/${id}/payment`);
+
+    return data;
+}
+
+/**
+ * Tell the shop you have paid. EcoCash and InnBucks settle somewhere else, so
+ * this sends the reference and the screenshot rather than taking the money.
+ */
+export async function submitPayment(input: {
+    id: string;
+    method: string;
+    amount_cents: number;
+    reference: string;
+    proofUri?: string | null;
+}): Promise<void> {
+    const form = new FormData();
+
+    form.append('method', input.method);
+    form.append('amount_cents', String(input.amount_cents));
+    form.append('reference', input.reference);
+
+    if (input.proofUri) {
+        form.append('proof', {
+            uri: input.proofUri,
+            name: 'proof.jpg',
+            type: 'image/jpeg',
+        } as unknown as Blob);
+    }
+
+    await apiClient.post(`/bookings/${input.id}/payment`, form, {
+        headers: { 'Content-Type': 'multipart/form-data' },
+    });
+}

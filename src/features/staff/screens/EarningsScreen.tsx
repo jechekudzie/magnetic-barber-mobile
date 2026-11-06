@@ -53,7 +53,11 @@ export function EarningsScreen() {
     }
 
     return (
-        <Screen onRefresh={() => void today.refetch()} refreshing={today.isRefetching}>
+        <Screen
+            onRefresh={() => void today.refetch()}
+            refreshing={today.isRefetching}
+            topBar={{ title: 'Your pay' }}
+        >
             <ScreenHeader eyebrow="Your pay" title="Earnings">
                 <Muted className="mt-3 leading-6">
                     {today.data.rate}% of every service you render, once the visit is done.

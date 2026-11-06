@@ -48,7 +48,11 @@ export function TeamEarningsScreen() {
     const { data, total_earned_cents, total_taken_cents, branch } = earnings.data;
 
     return (
-        <Screen onRefresh={() => void earnings.refetch()} refreshing={earnings.isRefetching}>
+        <Screen
+            onRefresh={() => void earnings.refetch()}
+            refreshing={earnings.isRefetching}
+            topBar={{ title: branch.name }}
+        >
             <ScreenHeader eyebrow={branch.name} title="The floor today" />
 
             <Panel className="mb-7 px-5 py-5">

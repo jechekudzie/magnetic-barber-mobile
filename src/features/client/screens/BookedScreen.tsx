@@ -73,6 +73,7 @@ export function BookedScreen({ navigation, route }: ClientStackProps<'Booked'>) 
 
     return (
         <Screen
+            topBar={{ title: 'Booked' }}
             footer={
                 <Button
                     label="Done"

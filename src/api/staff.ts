@@ -51,3 +51,53 @@ export async function fetchBranchEarnings(date?: string): Promise<BranchEarnings
 
     return data;
 }
+
+export async function fetchAppointment(id: string): Promise<Appointment> {
+    const { data } = await apiClient.get<{ data: Appointment }>(`/staff/appointments/${id}`);
+
+    return data.data;
+}
+
+/** One tap. The clock it starts is what blocks the chair if the cut runs on. */
+export async function startCut(id: string): Promise<Appointment> {
+    const { data } = await apiClient.put<{ data: Appointment }>(
+        `/staff/appointments/${id}/start`,
+    );
+
+    return data.data;
+}
+
+export async function finishCut(id: string): Promise<Appointment> {
+    const { data } = await apiClient.put<{ data: Appointment }>(
+        `/staff/appointments/${id}/finish`,
+    );
+
+    return data.data;
+}
+
+export async function saveStaffNote(id: string, staffNote: string): Promise<Appointment> {
+    const { data } = await apiClient.put<{ data: Appointment }>(
+        `/staff/appointments/${id}/note`,
+        { staff_note: staffNote },
+    );
+
+    return data.data;
+}
+
+/** The till. Cash and card confirm on the spot; mobile money waits a check. */
+export async function takePayment(input: {
+    id: string;
+    method: string;
+    amount_cents: number;
+    reference?: string;
+}): Promise<{ outstanding: { cents: number; formatted: string } }> {
+    const { data } = await apiClient.post<{
+        outstanding: { cents: number; formatted: string };
+    }>(`/staff/appointments/${input.id}/payments`, {
+        method: input.method,
+        amount_cents: input.amount_cents,
+        reference: input.reference,
+    });
+
+    return data;
+}

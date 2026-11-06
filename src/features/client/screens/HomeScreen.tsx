@@ -1,6 +1,6 @@
 import { useQuery } from '@tanstack/react-query';
 import { Linking, View } from 'react-native';
-import { MapPin, Phone } from 'lucide-react-native';
+import { ChevronRight, MapPin, Phone } from 'lucide-react-native';
 
 import { fetchMyBookings } from '@api/bookings';
 import { fetchBranches } from '@api/catalog';
@@ -32,7 +32,11 @@ export function HomeScreen({ navigation }: ClientTabProps<'Home'>) {
     const firstName = user?.name.split(' ')[0];
 
     return (
-        <Screen onRefresh={() => void branches.refetch()} refreshing={branches.isRefetching}>
+        <Screen
+            onRefresh={() => void branches.refetch()}
+            refreshing={branches.isRefetching}
+            topBar={{ title: branch?.name, onBell: () => navigation.navigate('Notifications') }}
+        >
             {signedIn ? (
                 <ScreenHeader eyebrow="Magnetic" title={`Welcome back,\n${firstName}`} />
             ) : (
@@ -64,13 +68,40 @@ export function HomeScreen({ navigation }: ClientTabProps<'Home'>) {
             <Heading className="mb-3">{signedIn ? 'Your next cut' : 'Book a chair'}</Heading>
 
             {next ? (
-                <Panel accent className="px-5 py-5">
-                    <Heading>{next.when_label}</Heading>
-                    <Muted className="mt-1.5">
-                        {next.services?.map((s) => s.name).join(', ')}
-                    </Muted>
-                    {next.staff ? <Muted className="mt-1">with {next.staff.name}</Muted> : null}
-                    <Figure className="mt-3">{next.total.formatted}</Figure>
+                <Panel
+                    accent
+                    className="px-5 py-5"
+                    onPress={() => navigation.navigate('BookingDetail', { id: next.id })}
+                >
+                    <View className="flex-row items-start justify-between">
+                        <View className="flex-1 pr-3">
+                            <Heading>{next.when_label}</Heading>
+                            <Muted className="mt-1.5 leading-5">
+                                {next.services?.map((s) => s.name).join(', ')}
+                            </Muted>
+                            {next.staff ? (
+                                <Muted className="mt-1">with {next.staff.name}</Muted>
+                            ) : null}
+                        </View>
+                        <ChevronRight size={18} color={COLORS.smoke} />
+                    </View>
+
+                    <View className="mt-4 flex-row items-end justify-between border-t border-white/[0.08] pt-4">
+                        <View>
+                            <Eyebrow className="text-smoke">Reference</Eyebrow>
+                            <Strong className="mt-1 tracking-wider">{next.reference}</Strong>
+                        </View>
+                        <View className="items-end">
+                            <Figure>{next.total.formatted}</Figure>
+                            <Muted className="mt-0.5">
+                                {next.is_paid_in_full
+                                    ? 'Paid'
+                                    : next.is_secured
+                                      ? 'Being checked'
+                                      : 'Not paid'}
+                            </Muted>
+                        </View>
+                    </View>
                 </Panel>
             ) : (
                 <Panel className="px-5 py-5">

@@ -24,6 +24,21 @@ export type ClientStackParamList = {
     /** `then` is where to land once the code checks out. */
     ClientLogin: { then?: keyof ClientTabParamList } | undefined;
     StaffLogin: undefined;
+    /** One booking in full, reached from the home card or the list. */
+    BookingDetail: { id: string };
+    /** Sending the shop a payment and its proof. */
+    Pay: { id: string };
+    /** Where the bell goes. */
+    Notifications: undefined;
+};
+
+/**
+ * Staff tabs sit inside a stack so a barber can open a job from the diary.
+ * The job screen is where the cut is actually worked.
+ */
+export type StaffStackParamList = {
+    Tabs: undefined;
+    Job: { id: string };
 };
 
 export type ClientTabParamList = {
@@ -56,7 +71,12 @@ export type ClientTabProps<T extends keyof ClientTabParamList> = CompositeScreen
     NativeStackScreenProps<ClientStackParamList>
 >;
 
-export type StaffTabProps<T extends keyof StaffTabParamList> = BottomTabScreenProps<
-    StaffTabParamList,
+export type StaffStackProps<T extends keyof StaffStackParamList> = NativeStackScreenProps<
+    StaffStackParamList,
     T
+>;
+
+export type StaffTabProps<T extends keyof StaffTabParamList> = CompositeScreenProps<
+    BottomTabScreenProps<StaffTabParamList, T>,
+    NativeStackScreenProps<StaffStackParamList>
 >;

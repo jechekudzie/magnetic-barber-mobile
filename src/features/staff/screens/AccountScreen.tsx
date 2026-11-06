@@ -32,7 +32,7 @@ export function AccountScreen() {
     }
 
     return (
-        <Screen>
+        <Screen topBar={{ title: 'Account' }}>
             <ScreenHeader
                 eyebrow="Account"
                 title={user?.staff?.display_name ?? user?.name ?? 'You'}

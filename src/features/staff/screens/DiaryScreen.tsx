@@ -7,6 +7,7 @@ import { Panel, Stat, StatRow } from '@shared/components/Panel';
 import { Screen, ScreenHeader } from '@shared/components/Screen';
 import { EmptyState, ErrorState, Loading } from '@shared/components/States';
 import { Body, Eyebrow, Figure, Heading, Muted } from '@shared/components/Text';
+import type { StaffTabProps } from '@navigation/types';
 import type { Appointment, AppointmentStatus } from '@shared/types';
 import { useAuthStore } from '@stores/auth';
 
@@ -36,11 +37,13 @@ function DiaryCard({
     permissions,
     onMove,
     busy,
+    onOpen,
 }: {
     appointment: Appointment;
     permissions: string[];
     onMove: (status: AppointmentStatus) => void;
     busy: boolean;
+    onOpen: () => void;
 }) {
     const moves = MOVES.filter(
         (move) =>
@@ -48,7 +51,7 @@ function DiaryCard({
     );
 
     return (
-        <Panel className="mb-3 px-5 py-5">
+        <Panel className="mb-3 px-5 py-5" onPress={onOpen}>
             <View className="flex-row items-start justify-between">
                 <View className="flex-1 pr-3">
                     <Heading>{appointment.when_label}</Heading>
@@ -95,7 +98,7 @@ function DiaryCard({
     );
 }
 
-export function DiaryScreen() {
+export function DiaryScreen({ navigation }: StaffTabProps<'Diary'>) {
     const queryClient = useQueryClient();
     const permissions = useAuthStore((state) => state.user?.permissions ?? []);
 
@@ -140,7 +143,11 @@ export function DiaryScreen() {
     const { counts, data, branch } = diary.data;
 
     return (
-        <Screen onRefresh={() => void diary.refetch()} refreshing={diary.isRefetching}>
+        <Screen
+            onRefresh={() => void diary.refetch()}
+            refreshing={diary.isRefetching}
+            topBar={{ title: branch.name }}
+        >
             <ScreenHeader eyebrow={branch.name} title="Today" />
 
             <Panel className="mb-7 px-5 py-5">
@@ -167,6 +174,7 @@ export function DiaryScreen() {
                         appointment={appointment}
                         permissions={permissions}
                         busy={move.isPending && move.variables?.id === appointment.id}
+                        onOpen={() => navigation.navigate('Job', { id: appointment.id })}
                         onMove={(status) => move.mutate({ id: appointment.id, status })}
                     />
                 ))

@@ -110,7 +110,7 @@ export function ProfileScreen({ navigation }: ClientTabProps<'Profile'>) {
     }
 
     return (
-        <Screen>
+        <Screen topBar={{ onBell: () => navigation.navigate('Notifications') }}>
             <ScreenHeader eyebrow="Your account" title={user!.name} />
 
             {error ? <ErrorState message={error} /> : null}

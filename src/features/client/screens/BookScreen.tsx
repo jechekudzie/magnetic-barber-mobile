@@ -290,6 +290,7 @@ export function BookScreen({ navigation }: ClientTabProps<'Book'>) {
                     />
                 </>
             }
+            topBar={{ title: branch?.name }}
         >
             {stepIndex > 0 ? (
                 <Pressable

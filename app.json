@@ -41,6 +41,13 @@
           "resizeMode": "contain",
           "backgroundColor": "#0d0d0d"
         }
+      ],
+      [
+        "expo-image-picker",
+        {
+          "photosPermission": "Magnetic needs your photos so you can send the shop a screenshot of your payment.",
+          "cameraPermission": "Magnetic needs the camera so you can photograph your payment confirmation."
+        }
       ]
     ],
     "runtimeVersion": {

@@ -28,13 +28,15 @@ function BookingCard({
     appointment,
     onCancel,
     cancelling,
+    onOpen,
 }: {
     appointment: Appointment;
     onCancel: () => void;
     cancelling: boolean;
+    onOpen: () => void;
 }) {
     return (
-        <Panel className="mb-3 px-5 py-5">
+        <Panel className="mb-3 px-5 py-5" onPress={onOpen}>
             <View className="flex-row items-start justify-between">
                 <View className="flex-1 pr-3">
                     <Heading>{appointment.when_label}</Heading>
@@ -119,6 +121,7 @@ export function MyBookingsScreen({ navigation }: ClientTabProps<'Bookings'>) {
         <Screen
             onRefresh={() => void bookings.refetch()}
             refreshing={bookings.isRefetching}
+            topBar={{ onBell: () => navigation.navigate('Notifications') }}
         >
             <ScreenHeader eyebrow="Magnetic" title="Your bookings" />
 
@@ -166,6 +169,9 @@ export function MyBookingsScreen({ navigation }: ClientTabProps<'Bookings'>) {
                         key={appointment.id}
                         appointment={appointment}
                         cancelling={cancel.isPending && cancel.variables === appointment.id}
+                        onOpen={() =>
+                            navigation.navigate('BookingDetail', { id: appointment.id })
+                        }
                         onCancel={() =>
                             Alert.alert(
                                 'Cancel this booking?',

@@ -18,6 +18,9 @@ import { fetchMe } from '@api/auth';
 import { ClientLoginScreen } from '@features/auth/screens/ClientLoginScreen';
 import { StaffLoginScreen } from '@features/auth/screens/StaffLoginScreen';
 import { BookedScreen } from '@features/client/screens/BookedScreen';
+import { BookingDetailScreen } from '@features/client/screens/BookingDetailScreen';
+import { NotificationsScreen } from '@features/client/screens/NotificationsScreen';
+import { PayScreen } from '@features/client/screens/PayScreen';
 import { BookScreen } from '@features/client/screens/BookScreen';
 import { HomeScreen } from '@features/client/screens/HomeScreen';
 import { MyBookingsScreen } from '@features/client/screens/MyBookingsScreen';
@@ -26,10 +29,12 @@ import { ProfileScreen } from '@features/client/screens/ProfileScreen';
 import { AccountScreen } from '@features/staff/screens/AccountScreen';
 import { DiaryScreen } from '@features/staff/screens/DiaryScreen';
 import { EarningsScreen } from '@features/staff/screens/EarningsScreen';
+import { JobScreen } from '@features/staff/screens/JobScreen';
 import { TeamEarningsScreen } from '@features/staff/screens/TeamEarningsScreen';
 import type {
     ClientStackParamList,
     ClientTabParamList,
+    StaffStackParamList,
     StaffTabParamList,
 } from '@navigation/types';
 import { useAuthStore } from '@stores/auth';
@@ -38,6 +43,7 @@ import { COLORS } from '@theme/fonts';
 const ClientStack = createNativeStackNavigator<ClientStackParamList>();
 const ClientTabs = createBottomTabNavigator<ClientTabParamList>();
 const StaffTabs = createBottomTabNavigator<StaffTabParamList>();
+const StaffStack = createNativeStackNavigator<StaffStackParamList>();
 
 const TAB_STYLE = {
     headerShown: false,
@@ -114,6 +120,9 @@ function ClientNavigator() {
                 component={StaffLoginScreen}
                 options={{ presentation: 'modal' }}
             />
+            <ClientStack.Screen name="BookingDetail" component={BookingDetailScreen} />
+            <ClientStack.Screen name="Pay" component={PayScreen} />
+            <ClientStack.Screen name="Notifications" component={NotificationsScreen} />
         </ClientStack.Navigator>
     );
 }
@@ -126,7 +135,7 @@ function ClientNavigator() {
  * somebody holding staff.commission.view, so a barber never sees a tab that
  * would 403 if they tapped it. The server checks the same permission again.
  */
-function StaffNavigator() {
+function StaffTabNavigator() {
     const permissions = useAuthStore((state) => state.user?.permissions ?? []);
 
     return (
@@ -167,6 +176,19 @@ function StaffNavigator() {
                 }}
             />
         </StaffTabs.Navigator>
+    );
+}
+
+/**
+ * Staff tabs inside a stack, so a barber can open a job from the diary and
+ * work the cut on a screen of its own.
+ */
+function StaffNavigator() {
+    return (
+        <StaffStack.Navigator screenOptions={{ headerShown: false }}>
+            <StaffStack.Screen name="Tabs" component={StaffTabNavigator} />
+            <StaffStack.Screen name="Job" component={JobScreen} />
+        </StaffStack.Navigator>
     );
 }
 

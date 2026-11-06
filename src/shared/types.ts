@@ -98,8 +98,26 @@ export type Appointment = {
     duration_minutes: number;
     total: Money;
     travel_fee: Money;
+    amount_paid: Money;
+    outstanding: Money;
+    /** The chair is spoken for: money claimed, maybe not yet checked. */
+    is_secured: boolean;
+    /** The shop actually has the money. */
+    is_paid_in_full: boolean;
+    /** What the barber's own clock says. Live while a cut is running. */
+    minutes_so_far: number | null;
+    is_overrunning: boolean;
+    started_at: string | null;
+    completed_at: string | null;
     client_note: string | null;
+    staff_note: string | null;
     client_may_cancel?: boolean;
+    client?: {
+        name: string;
+        /** Null unless the reader may see client contact details. */
+        phone: string | null;
+        visit_count: number | null;
+    } | null;
     branch?: {
         slug: string;
         name: string;

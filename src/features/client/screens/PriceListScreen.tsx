@@ -69,7 +69,11 @@ export function PriceListScreen() {
         .filter((category) => category.services.length > 0);
 
     return (
-        <Screen onRefresh={() => void priceList.refetch()} refreshing={priceList.isRefetching}>
+        <Screen
+            onRefresh={() => void priceList.refetch()}
+            refreshing={priceList.isRefetching}
+            topBar={{ title: branch?.name }}
+        >
             <ScreenHeader eyebrow={branch?.name} title="Price list">
                 <Muted className="mt-3 leading-6">Clean cuts, fresh looks, confidence.</Muted>
             </ScreenHeader>

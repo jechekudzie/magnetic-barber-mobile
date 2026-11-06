@@ -1,7 +1,9 @@
-import { ReactNode } from 'react';
+import { ReactNode, useState } from 'react';
 import {
     Image,
     KeyboardAvoidingView,
+    NativeScrollEvent,
+    NativeSyntheticEvent,
     Platform,
     RefreshControl,
     ScrollView,
@@ -24,15 +26,25 @@ const GLOW = require('@assets/brand/glow.png');
  * reproduces, and every gradient library for React Native is a native module
  * — a new native module means a full rebuild before the app will even start,
  * which is a steep price for decoration. A 14KB image needs nothing.
+ *
+ * It is drawn outside the safe area, so the colour runs up behind the status
+ * bar and the notch. Inside it, the inset left a flat black band across the
+ * top of every screen and the brand appeared to start an inch down the phone.
  */
-function Glow() {
+function Glow({ topInset }: { topInset: number }) {
     return (
         <Image
             source={GLOW}
             accessibilityIgnoresInvertColors
             pointerEvents="none"
             resizeMode="stretch"
-            style={{ position: 'absolute', left: 0, right: 0, top: 0, height: 300 }}
+            style={{
+                position: 'absolute',
+                left: 0,
+                right: 0,
+                top: 0,
+                height: 300 + topInset,
+            }}
         />
     );
 }
@@ -65,10 +77,31 @@ export function Screen({
     onRefresh?: () => void;
     refreshing?: boolean;
     glow?: boolean;
-    /** The bar across the top: mark or back, a label, and the bell. */
-    topBar?: { title?: string; onBack?: () => void; unread?: number; onBell?: () => void };
+    /** The bar across the top: mark or back, the shop's state, and the bell. */
+    topBar?: {
+        title?: string;
+        onBack?: () => void;
+        unread?: number;
+        onBell?: () => void;
+        showStatus?: boolean;
+    };
 }) {
     const insets = useSafeAreaInsets();
+
+    /*
+     * The bar has no border until the content starts sliding under it. A
+     * permanent line boxes the screen in; a line that appears on scroll says
+     * "there is more above" at the moment that is true.
+     */
+    const [lifted, setLifted] = useState(false);
+
+    function watchScroll(event: NativeSyntheticEvent<NativeScrollEvent>) {
+        const y = event.nativeEvent.contentOffset.y;
+
+        if (y > 4 !== lifted) {
+            setLifted(y > 4);
+        }
+    }
 
     const body = scroll ? (
         <ScrollView
@@ -80,6 +113,8 @@ export function Screen({
             // is focused can always be brought above it.
             automaticallyAdjustKeyboardInsets
             showsVerticalScrollIndicator={false}
+            onScroll={topBar ? watchScroll : undefined}
+            scrollEventThrottle={32}
             refreshControl={
                 onRefresh ? (
                     <RefreshControl
@@ -87,6 +122,7 @@ export function Screen({
                         onRefresh={onRefresh}
                         tintColor={COLORS.gold}
                         colors={[COLORS.gold]}
+                        progressViewOffset={8}
                     />
                 ) : undefined
             }
@@ -98,27 +134,38 @@ export function Screen({
     );
 
     return (
-        <SafeAreaView className="flex-1 bg-ink" edges={['top', 'left', 'right']}>
-            {glow ? <Glow /> : null}
+        // The glow sits on this, outside the inset, so it reaches the notch.
+        <View className="flex-1 bg-ink">
+            {glow ? <Glow topInset={insets.top} /> : null}
 
-            {topBar ? <TopBar {...topBar} /> : null}
-
-            <KeyboardAvoidingView
-                className="flex-1"
-                behavior={Platform.OS === 'ios' ? 'padding' : 'height'}
-                // The safe area is already accounted for above; counting it
-                // twice leaves a gap the height of the home indicator.
-                keyboardVerticalOffset={Platform.OS === 'ios' ? insets.top : 0}
-            >
-                {body}
-
-                {footer ? (
-                    <View className="border-t border-white/[0.08] bg-panel px-5 pb-7 pt-4">
-                        {footer}
+            <SafeAreaView className="flex-1" edges={['top', 'left', 'right']}>
+                {topBar ? (
+                    <View
+                        className={
+                            lifted ? 'border-b border-white/[0.08] bg-ink/95' : 'border-b border-transparent'
+                        }
+                    >
+                        <TopBar {...topBar} />
                     </View>
                 ) : null}
-            </KeyboardAvoidingView>
-        </SafeAreaView>
+
+                <KeyboardAvoidingView
+                    className="flex-1"
+                    behavior={Platform.OS === 'ios' ? 'padding' : 'height'}
+                    // The safe area is already accounted for above; counting
+                    // it twice leaves a gap the height of the home indicator.
+                    keyboardVerticalOffset={Platform.OS === 'ios' ? insets.top : 0}
+                >
+                    {body}
+
+                    {footer ? (
+                        <View className="border-t border-white/[0.08] bg-panel px-5 pb-7 pt-4">
+                            {footer}
+                        </View>
+                    ) : null}
+                </KeyboardAvoidingView>
+            </SafeAreaView>
+        </View>
     );
 }
 

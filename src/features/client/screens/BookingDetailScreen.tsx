@@ -7,6 +7,7 @@ import { errorMessage } from '@api/client';
 import { fetchBranches } from '@api/catalog';
 import type { ClientStackProps } from '@navigation/types';
 import { Button } from '@shared/components/Button';
+import { RateCut } from '@features/client/components/RateCut';
 import { Panel } from '@shared/components/Panel';
 import { Screen } from '@shared/components/Screen';
 import { ErrorState, Loading } from '@shared/components/States';
@@ -218,6 +219,10 @@ export function BookingDetailScreen({ navigation, route }: ClientStackProps<'Boo
                     </Row>
                 ) : null}
             </View>
+
+            {appointment.status === 'completed' ? (
+                <RateCut appointmentId={appointment.id} />
+            ) : null}
 
             {appointment.client_note ? (
                 <Panel className="mt-4 px-5 py-5">

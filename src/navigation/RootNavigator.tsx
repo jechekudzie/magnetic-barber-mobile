@@ -6,6 +6,7 @@ import { createBottomTabNavigator } from '@react-navigation/bottom-tabs';
 import {
     CalendarDays,
     CircleUser,
+    Gift,
     House,
     ReceiptText,
     Scissors,
@@ -19,6 +20,7 @@ import { ClientLoginScreen } from '@features/auth/screens/ClientLoginScreen';
 import { StaffLoginScreen } from '@features/auth/screens/StaffLoginScreen';
 import { BookedScreen } from '@features/client/screens/BookedScreen';
 import { BookingDetailScreen } from '@features/client/screens/BookingDetailScreen';
+import { LoyaltyScreen } from '@features/client/screens/LoyaltyScreen';
 import { NotificationsScreen } from '@features/client/screens/NotificationsScreen';
 import { PayScreen } from '@features/client/screens/PayScreen';
 import { BookScreen } from '@features/client/screens/BookScreen';
@@ -82,6 +84,11 @@ function ClientTabNavigator() {
                 options={{
                     tabBarIcon: ({ color, size }) => <ReceiptText color={color} size={size} />,
                 }}
+            />
+            <ClientTabs.Screen
+                name="Loyalty"
+                component={LoyaltyScreen}
+                options={{ tabBarIcon: ({ color, size }) => <Gift color={color} size={size} /> }}
             />
             <ClientTabs.Screen
                 name="Profile"

@@ -46,6 +46,7 @@ export type ClientTabParamList = {
     Prices: undefined;
     Book: { serviceId?: string } | undefined;
     Bookings: undefined;
+    Loyalty: undefined;
     Profile: undefined;
 };
 

@@ -115,3 +115,48 @@ export async function submitPayment(input: {
         headers: { 'Content-Type': 'multipart/form-data' },
     });
 }
+
+export type LoyaltySummary = {
+    data: {
+        points: number;
+        redeemable: boolean;
+        threshold: number;
+        value: { cents: number; formatted: string };
+        reward: { cents: number; formatted: string };
+        to_next: number;
+    };
+    history: Array<{
+        id: number;
+        points: number;
+        balance_after: number;
+        type: string;
+        description: string | null;
+        reference: string | null;
+        at: string | null;
+    }>;
+};
+
+export async function fetchLoyalty(): Promise<LoyaltySummary> {
+    const { data } = await apiClient.get<LoyaltySummary>('/loyalty');
+
+    return data;
+}
+
+export type MyReview = { rating: number; comment: string | null; at: string | null } | null;
+
+export async function fetchReview(id: string): Promise<MyReview> {
+    const { data } = await apiClient.get<{ data: MyReview }>(`/bookings/${id}/review`);
+
+    return data.data;
+}
+
+export async function submitReview(input: {
+    id: string;
+    rating: number;
+    comment?: string;
+}): Promise<void> {
+    await apiClient.post(`/bookings/${input.id}/review`, {
+        rating: input.rating,
+        comment: input.comment,
+    });
+}

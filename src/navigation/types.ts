@@ -1,8 +1,8 @@
-import type { NativeStackScreenProps } from '@react-navigation/native-stack';
-import type { BottomTabScreenProps } from '@react-navigation/bottom-tabs';
-import type { CompositeScreenProps } from '@react-navigation/native';
+import type { NativeStackScreenProps } from "@react-navigation/native-stack";
+import type { BottomTabScreenProps } from "@react-navigation/bottom-tabs";
+import type { CompositeScreenProps } from "@react-navigation/native";
 
-import type { Appointment } from '@shared/types';
+import type { Appointment } from "@shared/types";
 
 /**
  * The client side is not behind a login.
@@ -14,26 +14,26 @@ import type { Appointment } from '@shared/types';
  * cancelling your own bookings.
  */
 export type ClientStackParamList = {
-    Tabs: undefined;
-    /**
-     * The confirmation slip. chosenBarber says whether the client asked for
-     * that barber by name or the shop assigned one, which changes how the
-     * slip is allowed to word it.
-     */
-    Booked: { appointment: Appointment; chosenBarber: boolean };
-    /** `then` is where to land once the code checks out. */
-    ClientLogin: { then?: keyof ClientTabParamList } | undefined;
-    StaffLogin: undefined;
-    /** One booking in full, reached from the home card or the list. */
-    BookingDetail: { id: string };
-    /** Sending the shop a payment and its proof. */
-    Pay: { id: string };
-    /** Where the bell goes. */
-    Notifications: undefined;
-    /** The numbered gallery, reached from home or the price list. */
-    Styles: undefined;
-    /** Points and the ledger, reached from home or the account. */
-    Loyalty: undefined;
+  Tabs: undefined;
+  /**
+   * The confirmation slip. chosenBarber says whether the client asked for
+   * that barber by name or the shop assigned one, which changes how the
+   * slip is allowed to word it.
+   */
+  Booked: { appointment: Appointment; chosenBarber: boolean };
+  /** `then` is where to land once the code checks out. */
+  ClientLogin: { then?: keyof ClientTabParamList } | undefined;
+  StaffLogin: undefined;
+  /** One booking in full, reached from the home card or the list. */
+  BookingDetail: { id: string };
+  /** Sending the shop a payment and its proof. */
+  Pay: { id: string };
+  /** Where the bell goes. */
+  Notifications: undefined;
+  /** The numbered gallery, reached from home or the price list. */
+  Styles: undefined;
+  /** Points and the ledger, reached from home or the account. */
+  Loyalty: undefined;
 };
 
 /**
@@ -41,46 +41,45 @@ export type ClientStackParamList = {
  * The job screen is where the cut is actually worked.
  */
 export type StaffStackParamList = {
-    Tabs: undefined;
-    Job: { id: string };
+  Tabs: undefined;
+  Job: { id: string };
 };
 
 export type ClientTabParamList = {
-    Home: undefined;
-    Prices: undefined;
-    Book: { serviceId?: string; styleId?: string } | undefined;
-    Bookings: undefined;
-    Profile: undefined;
+  Home: undefined;
+  Prices: undefined;
+  Book: { serviceId?: string; styleId?: string } | undefined;
+  Bookings: undefined;
+  Profile: undefined;
 };
 
 /** Staff do sign in, and see a different app entirely. */
 export type StaffTabParamList = {
-    Diary: undefined;
-    Earnings: undefined;
-    Team: undefined;
-    Account: undefined;
+  Diary: undefined;
+  Desk: undefined;
+  Earnings: undefined;
+  Team: undefined;
+  Account: undefined;
 };
 
-export type ClientStackProps<T extends keyof ClientStackParamList> = NativeStackScreenProps<
-    ClientStackParamList,
-    T
->;
+export type ClientStackProps<T extends keyof ClientStackParamList> =
+  NativeStackScreenProps<ClientStackParamList, T>;
 
 /**
  * Tab screens need to reach the stack above them to push the login route, so
  * their navigation prop is both.
  */
-export type ClientTabProps<T extends keyof ClientTabParamList> = CompositeScreenProps<
+export type ClientTabProps<T extends keyof ClientTabParamList> =
+  CompositeScreenProps<
     BottomTabScreenProps<ClientTabParamList, T>,
     NativeStackScreenProps<ClientStackParamList>
->;
+  >;
 
-export type StaffStackProps<T extends keyof StaffStackParamList> = NativeStackScreenProps<
-    StaffStackParamList,
-    T
->;
+export type StaffStackProps<T extends keyof StaffStackParamList> =
+  NativeStackScreenProps<StaffStackParamList, T>;
 
-export type StaffTabProps<T extends keyof StaffTabParamList> = CompositeScreenProps<
+export type StaffTabProps<T extends keyof StaffTabParamList> =
+  CompositeScreenProps<
     BottomTabScreenProps<StaffTabParamList, T>,
     NativeStackScreenProps<StaffStackParamList>
->;
+  >;

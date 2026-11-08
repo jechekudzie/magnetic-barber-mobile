@@ -1,46 +1,48 @@
-import { useEffect } from 'react';
-import { ActivityIndicator, View } from 'react-native';
-import { useQuery } from '@tanstack/react-query';
-import { createNativeStackNavigator } from '@react-navigation/native-stack';
-import { createBottomTabNavigator } from '@react-navigation/bottom-tabs';
+import { useEffect } from "react";
+import { ActivityIndicator, View } from "react-native";
+import { useQuery } from "@tanstack/react-query";
+import { createNativeStackNavigator } from "@react-navigation/native-stack";
+import { createBottomTabNavigator } from "@react-navigation/bottom-tabs";
 import {
-    CalendarDays,
-    CircleUser,
-    House,
-    ReceiptText,
-    Scissors,
-    Tags,
-    TrendingUp,
-    Users,
-} from 'lucide-react-native';
+  CalendarDays,
+  CircleUser,
+  House,
+  ReceiptText,
+  Scissors,
+  Tags,
+  TrendingUp,
+  UserSearch,
+  Users,
+} from "lucide-react-native";
 
-import { fetchMe } from '@api/auth';
-import { ClientLoginScreen } from '@features/auth/screens/ClientLoginScreen';
-import { StaffLoginScreen } from '@features/auth/screens/StaffLoginScreen';
-import { BookedScreen } from '@features/client/screens/BookedScreen';
-import { BookingDetailScreen } from '@features/client/screens/BookingDetailScreen';
-import { LoyaltyScreen } from '@features/client/screens/LoyaltyScreen';
-import { NotificationsScreen } from '@features/client/screens/NotificationsScreen';
-import { PayScreen } from '@features/client/screens/PayScreen';
-import { BookScreen } from '@features/client/screens/BookScreen';
-import { HomeScreen } from '@features/client/screens/HomeScreen';
-import { MyBookingsScreen } from '@features/client/screens/MyBookingsScreen';
-import { PriceListScreen } from '@features/client/screens/PriceListScreen';
-import { ProfileScreen } from '@features/client/screens/ProfileScreen';
-import { StylesScreen } from '@features/client/screens/StylesScreen';
-import { AccountScreen } from '@features/staff/screens/AccountScreen';
-import { DiaryScreen } from '@features/staff/screens/DiaryScreen';
-import { EarningsScreen } from '@features/staff/screens/EarningsScreen';
-import { JobScreen } from '@features/staff/screens/JobScreen';
-import { TeamEarningsScreen } from '@features/staff/screens/TeamEarningsScreen';
+import { fetchMe } from "@api/auth";
+import { ClientLoginScreen } from "@features/auth/screens/ClientLoginScreen";
+import { StaffLoginScreen } from "@features/auth/screens/StaffLoginScreen";
+import { BookedScreen } from "@features/client/screens/BookedScreen";
+import { BookingDetailScreen } from "@features/client/screens/BookingDetailScreen";
+import { LoyaltyScreen } from "@features/client/screens/LoyaltyScreen";
+import { NotificationsScreen } from "@features/client/screens/NotificationsScreen";
+import { PayScreen } from "@features/client/screens/PayScreen";
+import { BookScreen } from "@features/client/screens/BookScreen";
+import { HomeScreen } from "@features/client/screens/HomeScreen";
+import { MyBookingsScreen } from "@features/client/screens/MyBookingsScreen";
+import { PriceListScreen } from "@features/client/screens/PriceListScreen";
+import { ProfileScreen } from "@features/client/screens/ProfileScreen";
+import { StylesScreen } from "@features/client/screens/StylesScreen";
+import { AccountScreen } from "@features/staff/screens/AccountScreen";
+import { DeskScreen } from "@features/staff/screens/DeskScreen";
+import { DiaryScreen } from "@features/staff/screens/DiaryScreen";
+import { EarningsScreen } from "@features/staff/screens/EarningsScreen";
+import { JobScreen } from "@features/staff/screens/JobScreen";
+import { TeamEarningsScreen } from "@features/staff/screens/TeamEarningsScreen";
 import type {
-    ClientStackParamList,
-    ClientTabParamList,
-    StaffStackParamList,
-    StaffTabParamList,
-} from '@navigation/types';
-import { useAuthStore } from '@stores/auth';
-import { COLORS } from '@theme/fonts';
+  ClientStackParamList,
+  ClientTabParamList,
+  StaffStackParamList,
+  StaffTabParamList,
+} from "@navigation/types";
+import { useAuthStore } from "@stores/auth";
+import { COLORS } from "@theme/fonts";
 
 const ClientStack = createNativeStackNavigator<ClientStackParamList>();
 const ClientTabs = createBottomTabNavigator<ClientTabParamList>();
@@ -48,52 +50,64 @@ const StaffTabs = createBottomTabNavigator<StaffTabParamList>();
 const StaffStack = createNativeStackNavigator<StaffStackParamList>();
 
 const TAB_STYLE = {
-    headerShown: false,
-    tabBarActiveTintColor: COLORS.gold,
-    tabBarInactiveTintColor: COLORS.smoke,
-    tabBarLabelStyle: { fontFamily: 'InstrumentSans_500Medium', fontSize: 11 },
-    tabBarStyle: {
-        backgroundColor: COLORS.panel,
-        borderTopColor: COLORS.hairline,
-        height: 88,
-        paddingTop: 8,
-    },
+  headerShown: false,
+  tabBarActiveTintColor: COLORS.gold,
+  tabBarInactiveTintColor: COLORS.smoke,
+  tabBarLabelStyle: { fontFamily: "InstrumentSans_500Medium", fontSize: 11 },
+  tabBarStyle: {
+    backgroundColor: COLORS.panel,
+    borderTopColor: COLORS.hairline,
+    height: 88,
+    paddingTop: 8,
+  },
 } as const;
 
 function ClientTabNavigator() {
-    return (
-        <ClientTabs.Navigator screenOptions={TAB_STYLE}>
-            <ClientTabs.Screen
-                name="Home"
-                component={HomeScreen}
-                options={{ tabBarIcon: ({ color, size }) => <House color={color} size={size} /> }}
-            />
-            <ClientTabs.Screen
-                name="Prices"
-                component={PriceListScreen}
-                options={{ tabBarIcon: ({ color, size }) => <Tags color={color} size={size} /> }}
-            />
-            <ClientTabs.Screen
-                name="Book"
-                component={BookScreen}
-                options={{ tabBarIcon: ({ color, size }) => <Scissors color={color} size={size} /> }}
-            />
-            <ClientTabs.Screen
-                name="Bookings"
-                component={MyBookingsScreen}
-                options={{
-                    tabBarIcon: ({ color, size }) => <ReceiptText color={color} size={size} />,
-                }}
-            />
-            <ClientTabs.Screen
-                name="Profile"
-                component={ProfileScreen}
-                options={{
-                    tabBarIcon: ({ color, size }) => <CircleUser color={color} size={size} />,
-                }}
-            />
-        </ClientTabs.Navigator>
-    );
+  return (
+    <ClientTabs.Navigator screenOptions={TAB_STYLE}>
+      <ClientTabs.Screen
+        name="Home"
+        component={HomeScreen}
+        options={{
+          tabBarIcon: ({ color, size }) => <House color={color} size={size} />,
+        }}
+      />
+      <ClientTabs.Screen
+        name="Prices"
+        component={PriceListScreen}
+        options={{
+          tabBarIcon: ({ color, size }) => <Tags color={color} size={size} />,
+        }}
+      />
+      <ClientTabs.Screen
+        name="Book"
+        component={BookScreen}
+        options={{
+          tabBarIcon: ({ color, size }) => (
+            <Scissors color={color} size={size} />
+          ),
+        }}
+      />
+      <ClientTabs.Screen
+        name="Bookings"
+        component={MyBookingsScreen}
+        options={{
+          tabBarIcon: ({ color, size }) => (
+            <ReceiptText color={color} size={size} />
+          ),
+        }}
+      />
+      <ClientTabs.Screen
+        name="Profile"
+        component={ProfileScreen}
+        options={{
+          tabBarIcon: ({ color, size }) => (
+            <CircleUser color={color} size={size} />
+          ),
+        }}
+      />
+    </ClientTabs.Navigator>
+  );
 }
 
 /**
@@ -102,33 +116,39 @@ function ClientTabNavigator() {
  * front of the door.
  */
 function ClientNavigator() {
-    return (
-        <ClientStack.Navigator screenOptions={{ headerShown: false }}>
-            <ClientStack.Screen name="Tabs" component={ClientTabNavigator} />
-            <ClientStack.Screen
-                name="Booked"
-                component={BookedScreen}
-                // No swipe back: the booking is made, and sliding back into a
-                // half filled wizard invites somebody to book it twice.
-                options={{ gestureEnabled: false }}
-            />
-            <ClientStack.Screen
-                name="ClientLogin"
-                component={ClientLoginScreen}
-                options={{ presentation: 'modal' }}
-            />
-            <ClientStack.Screen
-                name="StaffLogin"
-                component={StaffLoginScreen}
-                options={{ presentation: 'modal' }}
-            />
-            <ClientStack.Screen name="BookingDetail" component={BookingDetailScreen} />
-            <ClientStack.Screen name="Pay" component={PayScreen} />
-            <ClientStack.Screen name="Notifications" component={NotificationsScreen} />
-            <ClientStack.Screen name="Styles" component={StylesScreen} />
-            <ClientStack.Screen name="Loyalty" component={LoyaltyScreen} />
-        </ClientStack.Navigator>
-    );
+  return (
+    <ClientStack.Navigator screenOptions={{ headerShown: false }}>
+      <ClientStack.Screen name="Tabs" component={ClientTabNavigator} />
+      <ClientStack.Screen
+        name="Booked"
+        component={BookedScreen}
+        // No swipe back: the booking is made, and sliding back into a
+        // half filled wizard invites somebody to book it twice.
+        options={{ gestureEnabled: false }}
+      />
+      <ClientStack.Screen
+        name="ClientLogin"
+        component={ClientLoginScreen}
+        options={{ presentation: "modal" }}
+      />
+      <ClientStack.Screen
+        name="StaffLogin"
+        component={StaffLoginScreen}
+        options={{ presentation: "modal" }}
+      />
+      <ClientStack.Screen
+        name="BookingDetail"
+        component={BookingDetailScreen}
+      />
+      <ClientStack.Screen name="Pay" component={PayScreen} />
+      <ClientStack.Screen
+        name="Notifications"
+        component={NotificationsScreen}
+      />
+      <ClientStack.Screen name="Styles" component={StylesScreen} />
+      <ClientStack.Screen name="Loyalty" component={LoyaltyScreen} />
+    </ClientStack.Navigator>
+  );
 }
 
 /**
@@ -140,47 +160,70 @@ function ClientNavigator() {
  * would 403 if they tapped it. The server checks the same permission again.
  */
 function StaffTabNavigator() {
-    const permissions = useAuthStore((state) => state.user?.permissions ?? []);
+  const permissions = useAuthStore((state) => state.user?.permissions ?? []);
 
-    return (
-        <StaffTabs.Navigator screenOptions={TAB_STYLE}>
-            <StaffTabs.Screen
-                name="Diary"
-                component={DiaryScreen}
-                options={{
-                    tabBarIcon: ({ color, size }) => <CalendarDays color={color} size={size} />,
-                }}
-            />
+  return (
+    <StaffTabs.Navigator screenOptions={TAB_STYLE}>
+      <StaffTabs.Screen
+        name="Diary"
+        component={DiaryScreen}
+        options={{
+          tabBarIcon: ({ color, size }) => (
+            <CalendarDays color={color} size={size} />
+          ),
+        }}
+      />
 
-            {permissions.includes('report.view.own') ? (
-                <StaffTabs.Screen
-                    name="Earnings"
-                    component={EarningsScreen}
-                    options={{
-                        tabBarIcon: ({ color, size }) => <TrendingUp color={color} size={size} />,
-                    }}
-                />
-            ) : null}
+      {/* Finding whoever walked in. Gated on the same permission the
+                desk itself is: reception holds it, and so does a barber, so
+                a barber can work the desk when nobody is on it. */}
+      {permissions.includes("appointment.checkin") ? (
+        <StaffTabs.Screen
+          name="Desk"
+          component={DeskScreen}
+          options={{
+            tabBarIcon: ({ color, size }) => (
+              <UserSearch color={color} size={size} />
+            ),
+          }}
+        />
+      ) : null}
 
-            {permissions.includes('staff.commission.view') ? (
-                <StaffTabs.Screen
-                    name="Team"
-                    component={TeamEarningsScreen}
-                    options={{
-                        tabBarIcon: ({ color, size }) => <Users color={color} size={size} />,
-                    }}
-                />
-            ) : null}
+      {permissions.includes("report.view.own") ? (
+        <StaffTabs.Screen
+          name="Earnings"
+          component={EarningsScreen}
+          options={{
+            tabBarIcon: ({ color, size }) => (
+              <TrendingUp color={color} size={size} />
+            ),
+          }}
+        />
+      ) : null}
 
-            <StaffTabs.Screen
-                name="Account"
-                component={AccountScreen}
-                options={{
-                    tabBarIcon: ({ color, size }) => <CircleUser color={color} size={size} />,
-                }}
-            />
-        </StaffTabs.Navigator>
-    );
+      {permissions.includes("staff.commission.view") ? (
+        <StaffTabs.Screen
+          name="Team"
+          component={TeamEarningsScreen}
+          options={{
+            tabBarIcon: ({ color, size }) => (
+              <Users color={color} size={size} />
+            ),
+          }}
+        />
+      ) : null}
+
+      <StaffTabs.Screen
+        name="Account"
+        component={AccountScreen}
+        options={{
+          tabBarIcon: ({ color, size }) => (
+            <CircleUser color={color} size={size} />
+          ),
+        }}
+      />
+    </StaffTabs.Navigator>
+  );
 }
 
 /**
@@ -188,54 +231,54 @@ function StaffTabNavigator() {
  * work the cut on a screen of its own.
  */
 function StaffNavigator() {
-    return (
-        <StaffStack.Navigator screenOptions={{ headerShown: false }}>
-            <StaffStack.Screen name="Tabs" component={StaffTabNavigator} />
-            <StaffStack.Screen name="Job" component={JobScreen} />
-        </StaffStack.Navigator>
-    );
+  return (
+    <StaffStack.Navigator screenOptions={{ headerShown: false }}>
+      <StaffStack.Screen name="Tabs" component={StaffTabNavigator} />
+      <StaffStack.Screen name="Job" component={JobScreen} />
+    </StaffStack.Navigator>
+  );
 }
 
 function Splash() {
-    return (
-        <View className="flex-1 items-center justify-center bg-ink">
-            <ActivityIndicator color={COLORS.gold} />
-        </View>
-    );
+  return (
+    <View className="flex-1 items-center justify-center bg-ink">
+      <ActivityIndicator color={COLORS.gold} />
+    </View>
+  );
 }
 
 export function RootNavigator() {
-    const { token, user, isReady, hydrate, setUser } = useAuthStore();
+  const { token, user, isReady, hydrate, setUser } = useAuthStore();
 
-    useEffect(() => {
-        void hydrate();
-    }, [hydrate]);
+  useEffect(() => {
+    void hydrate();
+  }, [hydrate]);
 
-    /*
-     * Re-read the profile whenever there is a token. Roles and permissions are
-     * the shop's to change, not the app's to remember: a barber promoted to
-     * manager this morning should not have to reinstall to get the Team tab.
-     */
-    const me = useQuery({
-        queryKey: ['me'],
-        queryFn: fetchMe,
-        enabled: isReady && Boolean(token),
-        staleTime: 1000 * 60 * 5,
-    });
+  /*
+   * Re-read the profile whenever there is a token. Roles and permissions are
+   * the shop's to change, not the app's to remember: a barber promoted to
+   * manager this morning should not have to reinstall to get the Team tab.
+   */
+  const me = useQuery({
+    queryKey: ["me"],
+    queryFn: fetchMe,
+    enabled: isReady && Boolean(token),
+    staleTime: 1000 * 60 * 5,
+  });
 
-    useEffect(() => {
-        if (me.data) {
-            setUser(me.data);
-        }
-    }, [me.data, setUser]);
-
-    // Still reading the keystore. Deciding which app to build before that
-    // finishes would flash the wrong one at somebody already signed in.
-    if (!isReady) {
-        return <Splash />;
+  useEffect(() => {
+    if (me.data) {
+      setUser(me.data);
     }
+  }, [me.data, setUser]);
 
-    // Staff hold a token and see a different app. Everybody else gets the
-    // client app, whether or not they have signed in.
-    return token && user?.is_staff ? <StaffNavigator /> : <ClientNavigator />;
+  // Still reading the keystore. Deciding which app to build before that
+  // finishes would flash the wrong one at somebody already signed in.
+  if (!isReady) {
+    return <Splash />;
+  }
+
+  // Staff hold a token and see a different app. Everybody else gets the
+  // client app, whether or not they have signed in.
+  return token && user?.is_staff ? <StaffNavigator /> : <ClientNavigator />;
 }

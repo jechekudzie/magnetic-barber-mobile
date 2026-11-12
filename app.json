@@ -46,12 +46,23 @@
         "expo-image-picker",
         {
           "photosPermission": "Magnetic needs your photos so you can send the shop a screenshot of your payment.",
-          "cameraPermission": "Magnetic needs the camera so you can photograph your payment confirmation."
+          "cameraPermission": "Magnetic needs the camera so you can photograph your payment confirmation.",
+          "microphonePermission": false
         }
-      ]
+      ],
+      "expo-status-bar"
     ],
     "runtimeVersion": {
       "policy": "appVersion"
+    },
+    "extra": {
+      "eas": {
+        "projectId": "1949d8d4-2411-4b41-a506-acf0dc5b8939"
+      }
+    },
+    "owner": "majecha",
+    "updates": {
+      "url": "https://u.expo.dev/1949d8d4-2411-4b41-a506-acf0dc5b8939"
     }
   }
 }
